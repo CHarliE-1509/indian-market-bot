@@ -1,0 +1,22 @@
+{
+  "capital_initial": 20000,
+  "cash": 20000,
+  "holdings": {},
+  "peak_equity": 20000,
+  "status": "ACTIVE",
+  "halt_reason": null,
+  "last_rebalance_month": "2026-09",
+  "trade_log": [
+    {
+      "date": "2026-09-29",
+      "side": "NONE",
+      "reason": "regime filter negative"
+    }
+  ],
+  "equity_history": [
+    {
+      "date": "2026-09-29",
+      "equity": 20000
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "nifty_bh": {
+    "CAGR%": 9.48,
+    "MaxDD%": -38.44,
+    "Sharpe": 0.62
+  },
+  "equal_weight_universe_bh": {
+    "CAGR%": 13.85,
+    "MaxDD%": -36.28,
+    "Sharpe": 0.86
+  }
+}

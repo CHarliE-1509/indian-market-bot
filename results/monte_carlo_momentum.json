@@ -1,0 +1,11 @@
+{
+  "n_simulations": 5000,
+  "cagr_p5": 0.7,
+  "cagr_p50": 6.99,
+  "cagr_p95": 14.04,
+  "maxdd_p50": -14.58,
+  "maxdd_p5": -27.12,
+  "maxdd_p1": -32.9,
+  "pct_sims_breaching_20pct_dd": 20.9,
+  "historical_realized_maxdd": -14.45
+}

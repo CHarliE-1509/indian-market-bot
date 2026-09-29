@@ -1,0 +1,3 @@
+mode,CAGR%,MaxDD%,Sharpe,WinRate%,Trades
+mean_reversion_only,-2.57,-37.58,-0.1,62.53,86.58
+trend_pullback_hybrid,-1.24,-20.94,-0.17,52.11,52.42

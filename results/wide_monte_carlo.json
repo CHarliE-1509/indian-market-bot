@@ -1,0 +1,11 @@
+{
+  "cagr_p5": 2.91,
+  "cagr_p50": 11.59,
+  "cagr_p95": 21.02,
+  "maxdd_p50": -17.2,
+  "maxdd_p5": -30.26,
+  "maxdd_p1": -37.15,
+  "pct_breach_20": 33.1,
+  "pct_breach_25": 13.9,
+  "historical_realized_maxdd": -15.89
+}

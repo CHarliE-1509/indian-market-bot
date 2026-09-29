@@ -1,0 +1,6 @@
+data/*.csv
+__pycache__/
+*.pyc
+.DS_Store
+logs/launchd_stdout.log
+logs/launchd_stderr.log

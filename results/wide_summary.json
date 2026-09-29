@@ -1,0 +1,14 @@
+{
+  "n_stocks": 85,
+  "single_asset_avg": {
+    "CAGR%": -0.67,
+    "MaxDD%": -21.34,
+    "Sharpe": -0.08,
+    "WinRate%": 52.82
+  },
+  "nifty_bh": {
+    "CAGR%": 9.48,
+    "MaxDD%": -38.44,
+    "Sharpe": 0.62
+  }
+}
