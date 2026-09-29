@@ -143,8 +143,9 @@ def page_shell(title, active_page, body_html, updated_at=""):
 """
 
 
-def kpi(label, value, cls=""):
-    return f'<div class="kpi"><div class="label">{label}</div><div class="value {cls}">{value}</div></div>'
+def kpi(label, value, cls="", value_id=""):
+    id_attr = f' id="{value_id}"' if value_id else ""
+    return f'<div class="kpi"><div class="label">{label}</div><div class="value {cls}"{id_attr}>{value}</div></div>'
 
 
 def chip(label, kind):

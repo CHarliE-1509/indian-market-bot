@@ -118,12 +118,13 @@ footer.site-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid 
 
 <section>
   <div class="kpi-row">
-    <div class="kpi"><div class="label">Current equity</div><div class="value ">₹20.0K</div></div>
-    <div class="kpi"><div class="label">Total return</div><div class="value pos">+0.00%</div></div>
-    <div class="kpi"><div class="label">Drawdown from peak</div><div class="value ">0.00%</div></div>
+    <div class="kpi"><div class="label">Current equity</div><div class="value pos" id="kpi-equity">₹20.0K</div></div>
+    <div class="kpi"><div class="label">Total return</div><div class="value pos" id="kpi-return">+0.00%</div></div>
+    <div class="kpi"><div class="label">Drawdown from peak</div><div class="value " id="kpi-drawdown">0.00%</div></div>
     <div class="kpi"><div class="label">Status</div><div class="value pos">ACTIVE</div></div>
     <div class="kpi"><div class="label">Strategy mode</div><div class="value ">BEAR</div></div>
   </div>
+  <p id="live-indicator" style="font-size:11px;color:var(--ink-muted);margin:8px 0 0;">Showing last scheduled update (checking for live prices&hellip;)</p>
 </section>
 
 <section>
@@ -139,8 +140,8 @@ footer.site-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid 
     <div class="card">
       <h3>Current positions</h3>
       <div class="table-scroll"><table>
-        <thead><tr><th>Stock</th><th>Shares</th><th>Entry price</th><th>Entry date</th></tr></thead>
-        <tbody><tr><td colspan="4" style="text-align:center;color:var(--ink-muted);">No open positions — in cash</td></tr></tbody>
+        <thead><tr><th>Stock</th><th>Shares</th><th>Entry price</th><th>Entry date</th><th>Live price</th><th>P&amp;L</th></tr></thead>
+        <tbody id="holdings-tbody"><tr><td colspan="6" style="text-align:center;color:var(--ink-muted);">No open positions — in cash</td></tr></tbody>
       </table></div>
     </div>
     <div class="card">
@@ -244,6 +245,69 @@ function drawMultiLine(svgEl, ttEl, dates, series, opts) {
 const chartData = {"dates": ["2026-09-29", "-"], "values": [20000, 20000]};
 drawMultiLine(document.getElementById('chart-equity'), document.getElementById('tt-equity'),
   chartData.dates, [{label:'Equity', values: chartData.values, color: getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim()}], {h:280});
+</script>
+
+<script>
+(function() {
+  const PROXY = "https://nse-price-proxy.ktilak703.workers.dev";
+  const HOLDINGS = {};
+  const CASH = 20000;
+  const PEAK_EQUITY = 20000;
+  const INITIAL = 20000;
+  const indicator = document.getElementById('live-indicator');
+
+  if (!PROXY) {
+    indicator.textContent = 'Showing last scheduled update (live price proxy not configured)';
+    return;
+  }
+
+  async function fetchQuote(ticker) {
+    const r = await fetch(`${PROXY}/?symbol=${encodeURIComponent(ticker)}`);
+    if (!r.ok) throw new Error('bad response');
+    const data = await r.json();
+    return data.chart.result[0].meta.regularMarketPrice;
+  }
+
+  async function refreshLive() {
+    const tickers = Object.keys(HOLDINGS);
+    try {
+      const prices = await Promise.all(tickers.map(t => fetchQuote(t).catch(() => null)));
+      let liveEquity = CASH;
+      let anyFailed = false;
+      tickers.forEach((t, i) => {
+        const price = prices[i];
+        const priceCell = document.querySelector(`[data-ticker-cell="${t}"]`);
+        const pnlCell = document.querySelector(`[data-ticker-pnl="${t}"]`);
+        if (price == null) { anyFailed = true; if (priceCell) priceCell.textContent = 'n/a'; return; }
+        const pos = HOLDINGS[t];
+        liveEquity += pos.shares * price;
+        const pnl = (price - pos.entry_price) * pos.shares;
+        const pnlPct = (price / pos.entry_price - 1) * 100;
+        if (priceCell) priceCell.textContent = '₹' + price.toFixed(2);
+        if (pnlCell) {
+          pnlCell.textContent = (pnl >= 0 ? '+' : '') + '₹' + pnl.toFixed(0) + ' (' + pnlPct.toFixed(1) + '%)';
+          pnlCell.style.color = pnl >= 0 ? 'var(--good)' : 'var(--critical)';
+        }
+      });
+
+      if (tickers.length === 0 || !anyFailed) {
+        const pnlPct = (liveEquity / INITIAL - 1) * 100;
+        const ddPct = (liveEquity / Math.max(PEAK_EQUITY, liveEquity) - 1) * 100;
+        document.getElementById('kpi-equity').textContent = fmtRsJS(liveEquity);
+        document.getElementById('kpi-return').textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+        document.getElementById('kpi-drawdown').textContent = ddPct.toFixed(2) + '%';
+        indicator.textContent = 'Live prices as of ' + new Date().toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+        indicator.style.color = 'var(--good)';
+      } else {
+        indicator.textContent = 'Some live prices unavailable — showing last scheduled update for those';
+      }
+    } catch (e) {
+      indicator.textContent = 'Live price fetch failed — showing last scheduled update';
+    }
+  }
+
+  refreshLive();
+})();
 </script>
 
 <footer class="site-footer">

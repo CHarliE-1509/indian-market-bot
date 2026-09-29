@@ -21,9 +21,9 @@ RESULTS = BASE / "results"
 DOCS = BASE / "docs"
 DOCS.mkdir(exist_ok=True)
 
-# Placeholder — fill in after the Cloudflare Worker is deployed (see setup notes).
-# Site works correctly without it, just without live-on-refresh price updates.
-LIVE_QUOTE_PROXY_URL = ""
+# Cloudflare Worker CORS proxy for live Yahoo Finance quotes (see cloudflare-worker.js).
+# Site degrades gracefully to the last scheduled push if this is empty or unreachable.
+LIVE_QUOTE_PROXY_URL = "https://nse-price-proxy.ktilak703.workers.dev"
 
 
 def load_json(path, default=None):
@@ -49,13 +49,17 @@ def generate_index(ledger, bots):
     pnl_pct = (latest_equity / initial - 1) * 100 if initial else 0
     peak = ledger.get("peak_equity", initial)
     drawdown_pct = (latest_equity / peak - 1) * 100 if peak else 0
+    cash_for_live = ledger.get("cash", 0)
 
+    holdings = ledger.get("holdings", {})
     holdings_rows = ""
-    for t, pos in ledger.get("holdings", {}).items():
-        holdings_rows += (f'<tr><td>{t.replace(".NS","")}</td><td>{pos["shares"]}</td>'
-                           f'<td>{fmt_rs(pos["entry_price"])}</td><td>{pos.get("entry_date","")}</td></tr>')
+    for t, pos in holdings.items():
+        holdings_rows += (f'<tr data-ticker="{t}"><td>{t.replace(".NS","")}</td><td>{pos["shares"]}</td>'
+                           f'<td>{fmt_rs(pos["entry_price"])}</td><td>{pos.get("entry_date","")}</td>'
+                           f'<td class="num live-price" data-ticker-cell="{t}">&mdash;</td>'
+                           f'<td class="num live-pnl" data-ticker-pnl="{t}">&mdash;</td></tr>')
     if not holdings_rows:
-        holdings_rows = '<tr><td colspan="4" style="text-align:center;color:var(--ink-muted);">No open positions — in cash</td></tr>'
+        holdings_rows = '<tr><td colspan="6" style="text-align:center;color:var(--ink-muted);">No open positions — in cash</td></tr>'
 
     picks_rows = ""
     for p in decision.get("final_picks", []):
@@ -78,12 +82,13 @@ def generate_index(ledger, bots):
 
 <section>
   <div class="kpi-row">
-    {kpi("Current equity", fmt_rs(latest_equity))}
-    {kpi("Total return", f"{pnl_pct:+.2f}%", "pos" if pnl_pct >= 0 else "neg")}
-    {kpi("Drawdown from peak", f"{drawdown_pct:.2f}%", "neg" if drawdown_pct < -1 else "")}
+    {kpi("Current equity", fmt_rs(latest_equity), "pos" if pnl_pct >= 0 else "neg", "kpi-equity")}
+    {kpi("Total return", f"{pnl_pct:+.2f}%", "pos" if pnl_pct >= 0 else "neg", "kpi-return")}
+    {kpi("Drawdown from peak", f"{drawdown_pct:.2f}%", "neg" if drawdown_pct < -1 else "", "kpi-drawdown")}
     {kpi("Status", ledger.get("status", "UNKNOWN"), "neg" if ledger.get("status") == "HALTED" else "pos")}
     {kpi("Strategy mode", mode)}
   </div>
+  <p id="live-indicator" style="font-size:11px;color:var(--ink-muted);margin:8px 0 0;">Showing last scheduled update (checking for live prices&hellip;)</p>
 </section>
 
 <section>
@@ -99,8 +104,8 @@ def generate_index(ledger, bots):
     <div class="card">
       <h3>Current positions</h3>
       <div class="table-scroll"><table>
-        <thead><tr><th>Stock</th><th>Shares</th><th>Entry price</th><th>Entry date</th></tr></thead>
-        <tbody>{holdings_rows}</tbody>
+        <thead><tr><th>Stock</th><th>Shares</th><th>Entry price</th><th>Entry date</th><th>Live price</th><th>P&amp;L</th></tr></thead>
+        <tbody id="holdings-tbody">{holdings_rows}</tbody>
       </table></div>
     </div>
     <div class="card">
@@ -126,6 +131,69 @@ def generate_index(ledger, bots):
 const chartData = {json.dumps(chart_data)};
 drawMultiLine(document.getElementById('chart-equity'), document.getElementById('tt-equity'),
   chartData.dates, [{{label:'Equity', values: chartData.values, color: getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim()}}], {{h:280}});
+</script>
+
+<script>
+(function() {{
+  const PROXY = {json.dumps(LIVE_QUOTE_PROXY_URL)};
+  const HOLDINGS = {json.dumps(holdings)};
+  const CASH = {cash_for_live};
+  const PEAK_EQUITY = {peak};
+  const INITIAL = {initial};
+  const indicator = document.getElementById('live-indicator');
+
+  if (!PROXY) {{
+    indicator.textContent = 'Showing last scheduled update (live price proxy not configured)';
+    return;
+  }}
+
+  async function fetchQuote(ticker) {{
+    const r = await fetch(`${{PROXY}}/?symbol=${{encodeURIComponent(ticker)}}`);
+    if (!r.ok) throw new Error('bad response');
+    const data = await r.json();
+    return data.chart.result[0].meta.regularMarketPrice;
+  }}
+
+  async function refreshLive() {{
+    const tickers = Object.keys(HOLDINGS);
+    try {{
+      const prices = await Promise.all(tickers.map(t => fetchQuote(t).catch(() => null)));
+      let liveEquity = CASH;
+      let anyFailed = false;
+      tickers.forEach((t, i) => {{
+        const price = prices[i];
+        const priceCell = document.querySelector(`[data-ticker-cell="${{t}}"]`);
+        const pnlCell = document.querySelector(`[data-ticker-pnl="${{t}}"]`);
+        if (price == null) {{ anyFailed = true; if (priceCell) priceCell.textContent = 'n/a'; return; }}
+        const pos = HOLDINGS[t];
+        liveEquity += pos.shares * price;
+        const pnl = (price - pos.entry_price) * pos.shares;
+        const pnlPct = (price / pos.entry_price - 1) * 100;
+        if (priceCell) priceCell.textContent = '₹' + price.toFixed(2);
+        if (pnlCell) {{
+          pnlCell.textContent = (pnl >= 0 ? '+' : '') + '₹' + pnl.toFixed(0) + ' (' + pnlPct.toFixed(1) + '%)';
+          pnlCell.style.color = pnl >= 0 ? 'var(--good)' : 'var(--critical)';
+        }}
+      }});
+
+      if (tickers.length === 0 || !anyFailed) {{
+        const pnlPct = (liveEquity / INITIAL - 1) * 100;
+        const ddPct = (liveEquity / Math.max(PEAK_EQUITY, liveEquity) - 1) * 100;
+        document.getElementById('kpi-equity').textContent = fmtRsJS(liveEquity);
+        document.getElementById('kpi-return').textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+        document.getElementById('kpi-drawdown').textContent = ddPct.toFixed(2) + '%';
+        indicator.textContent = 'Live prices as of ' + new Date().toLocaleTimeString('en-IN', {{hour: '2-digit', minute:'2-digit'}});
+        indicator.style.color = 'var(--good)';
+      }} else {{
+        indicator.textContent = 'Some live prices unavailable — showing last scheduled update for those';
+      }}
+    }} catch (e) {{
+      indicator.textContent = 'Live price fetch failed — showing last scheduled update';
+    }}
+  }}
+
+  refreshLive();
+}})();
 </script>
 """
     write_page("index.html", page_shell("Portfolio Overview", "index.html", body, bots.get("generated_at", "")[:16].replace("T"," ")))
