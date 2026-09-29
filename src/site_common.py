@@ -8,6 +8,7 @@ NAV_ITEMS = [
     ("quant.html", "Quant"),
     ("technical.html", "Technical"),
     ("sentiment.html", "Sentiment"),
+    ("montecarlo.html", "Monte Carlo"),
     ("backtest.html", "Backtest"),
 ]
 

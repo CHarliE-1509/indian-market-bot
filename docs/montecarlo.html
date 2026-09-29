@@ -1,0 +1,423 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monte Carlo Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  color-scheme: light;
+  --surface-1:   #fcfcfb; --page: #f9f9f7; --card: #ffffff;
+  --ink-1: #0b0b0b; --ink-2: #52514e; --ink-muted: #898781;
+  --grid: #e1e0d9; --baseline: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100; --series-5: #4a3aa7;
+  --good: #0ca30c; --warning: #b5790a; --critical: #d03b3b;
+  --good-bg: #eaf7ea; --warning-bg: #fbf1de; --critical-bg: #fbebea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-1: #1a1a19; --page: #0d0d0d; --card: #202020;
+    --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+    --grid: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --series-5: #9085e9;
+    --good: #0ca30c; --warning: #d99a1f; --critical: #e66767;
+    --good-bg: #10230f; --warning-bg: #2a2010; --critical-bg: #2a1412;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #1a1a19; --page: #0d0d0d; --card: #202020;
+  --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+  --grid: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --series-5: #9085e9;
+  --good: #0ca30c; --warning: #d99a1f; --critical: #e66767;
+  --good-bg: #10230f; --warning-bg: #2a2010; --critical-bg: #2a1412;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--page); }
+body {
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink-1); padding-bottom: 60px;
+}
+.num { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+a { color: var(--series-1); }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+
+nav.topnav {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+nav.topnav .wrap { display: flex; align-items: center; gap: 4px; padding: 12px 20px; flex-wrap: wrap; }
+nav.topnav .brand { font-weight: 700; margin-right: 16px; font-size: 14px; }
+nav.topnav a.navlink {
+  color: var(--ink-2); text-decoration: none; font-size: 13px; padding: 6px 12px;
+  border-radius: 6px; font-weight: 500;
+}
+nav.topnav a.navlink:hover { background: var(--grid); }
+nav.topnav a.navlink.active { background: var(--series-1); color: white; }
+.updated-badge { margin-left: auto; font-size: 11px; color: var(--ink-muted); }
+
+header.page-head { padding: 28px 0 8px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-muted); font-weight: 600; margin-bottom: 6px; }
+h1 { font-size: 24px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.01em; }
+p.lede { color: var(--ink-2); font-size: 14px; line-height: 1.6; max-width: 68ch; }
+
+section { margin: 28px 0; }
+h2 { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted);
+     font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.kpi .label { font-size: 11px; color: var(--ink-muted); margin-bottom: 5px; }
+.kpi .value { font-size: 19px; font-weight: 600; font-family: "IBM Plex Mono", monospace; }
+.kpi .value.pos { color: var(--good); } .kpi .value.neg { color: var(--critical); }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; color: inherit; }
+table, tbody, tr, th, td { color: inherit; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink-muted); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+td { font-family: "IBM Plex Mono", monospace; }
+td:first-child { font-family: "IBM Plex Sans", sans-serif; color: var(--ink-1); }
+.table-scroll { overflow-x: auto; }
+
+.chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10.5px; font-family: "IBM Plex Sans", sans-serif; font-weight: 600; }
+.chip.good { background: var(--good-bg); color: var(--good); }
+.chip.warning { background: var(--warning-bg); color: var(--warning); }
+.chip.critical { background: var(--critical-bg); color: var(--critical); }
+.chip.neutral { background: var(--grid); color: var(--ink-2); }
+
+.callout { background: var(--warning-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.6; }
+.callout.info { background: var(--card); border-left: 3px solid var(--series-1); }
+
+.headline-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.headline-item:last-child { border-bottom: none; }
+.headline-item .src { color: var(--ink-muted); font-size: 11px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+footer.site-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--ink-muted); }
+</style>
+
+<nav class="topnav"><div class="wrap">
+      <span class="brand">NSE Bot</span><a class="navlink" href="index.html">Overview</a><a class="navlink" href="manager.html">Manager</a><a class="navlink" href="quant.html">Quant</a><a class="navlink" href="technical.html">Technical</a><a class="navlink" href="sentiment.html">Sentiment</a><a class="navlink active" href="montecarlo.html">Monte Carlo</a><a class="navlink" href="backtest.html">Backtest</a><span class="updated-badge">Updated 2026-09-30 01:13</span>
+    </div></nav>
+<div class="wrap">
+
+<header class="page-head">
+  <div class="eyebrow">Monte Carlo Bot</div>
+  <h1>Simulated future price paths</h1>
+  <p class="lede">Geometric Brownian Motion simulation using each stock's own historical drift and volatility
+  (trailing 252 trading days). This is a standard illustrative technique, not a forecast — GBM assumes
+  constant volatility and log-normal returns, so it misses fat tails, jumps, and regime changes. Read the
+  spread of outcomes, not any single path.</p>
+</header>
+
+<section>
+  <div class="card">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+      <div>
+        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Stock (defaulting to no current position — showing an example)</label>
+        <select id="mc-ticker" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;min-width:220px;">
+          <option value="ABB.NS">ABB</option><option value="ACC.NS">ACC</option><option value="AMBUJACEM.NS">AMBUJACEM</option><option value="ASHOKLEY.NS">ASHOKLEY</option><option value="AUBANK.NS">AUBANK</option><option value="ADANIPORTS.NS">Adani Ports</option><option value="APOLLOHOSP.NS">Apollo Hospitals</option><option value="ASIANPAINT.NS">Asian Paints</option><option value="DMART.NS">Avenue Supermarts DMart</option><option value="AXISBANK.NS">Axis Bank</option><option value="BAJAJ-AUTO.NS">BAJAJ-AUTO</option><option value="BALKRISIND.NS">BALKRISIND</option><option value="BANKBARODA.NS">BANKBARODA</option><option value="BOSCHLTD.NS">BOSCHLTD</option><option value="BPCL.NS">BPCL</option><option value="BAJFINANCE.NS">Bajaj Finance</option><option value="BAJAJFINSV.NS">Bajaj Finserv</option><option value="BEL.NS">Bharat Electronics</option><option value="BHARTIARTL.NS">Bharti Airtel</option><option value="BRITANNIA.NS">Britannia Industries</option><option value="COLPAL.NS">COLPAL</option><option value="CROMPTON.NS">CROMPTON</option><option value="CIPLA.NS">Cipla</option><option value="COALINDIA.NS">Coal India</option><option value="DABUR.NS">DABUR</option><option value="DLF.NS">DLF Limited</option><option value="DIVISLAB.NS">Divi's Laboratories</option><option value="DRREDDY.NS">Dr Reddy's Laboratories</option><option value="EICHERMOT.NS">Eicher Motors</option><option value="FEDERALBNK.NS">FEDERALBNK</option><option value="GAIL.NS">GAIL</option><option value="GODREJCP.NS">GODREJCP</option><option value="GODREJPROP.NS">GODREJPROP</option><option value="GRASIM.NS">Grasim Industries</option><option value="HCLTECH.NS">HCL Technologies</option><option value="HDFCBANK.NS">HDFC Bank</option><option value="HDFCLIFE.NS">HDFC Life</option><option value="HDFCAMC.NS">HDFCAMC</option><option value="HAVELLS.NS">Havells India</option><option value="HEROMOTOCO.NS">Hero MotoCorp</option><option value="HINDALCO.NS">Hindalco</option><option value="HAL.NS">Hindustan Aeronautics</option><option value="HINDUNILVR.NS">Hindustan Unilever</option><option value="ICICIBANK.NS">ICICI Bank</option><option value="ICICIGI.NS">ICICIGI</option><option value="ICICIPRULI.NS">ICICIPRULI</option><option value="IOC.NS">IOC</option><option value="ITC.NS">ITC Limited</option><option value="INDUSINDBK.NS">IndusInd Bank</option><option value="INFY.NS">Infosys</option><option value="INDIGO.NS">InterGlobe Aviation</option><option value="JINDALSTEL.NS">JINDALSTEL</option><option value="JSWSTEEL.NS">JSW Steel</option><option value="KOTAKBANK.NS">Kotak Mahindra Bank</option><option value="LUPIN.NS">LUPIN</option><option value="LT.NS">Larsen Toubro</option><option value="MARICO.NS">MARICO</option><option value="MOTHERSON.NS">MOTHERSON</option><option value="M&M.NS">Mahindra Mahindra</option><option value="MARUTI.NS">Maruti Suzuki</option><option value="NTPC.NS">NTPC Limited</option><option value="NESTLEIND.NS">Nestle India</option><option value="OBEROIRLTY.NS">OBEROIRLTY</option><option value="ONGC.NS">ONGC</option><option value="PETRONET.NS">PETRONET</option><option value="POWERGRID.NS">Power Grid Corporation</option><option value="RELIANCE.NS" selected>Reliance Industries</option><option value="SBILIFE.NS">SBI Life</option><option value="SHREECEM.NS">SHREECEM</option><option value="SRF.NS">SRF</option><option value="SIEMENS.NS">Siemens India</option><option value="SBIN.NS">State Bank of India</option><option value="SUNPHARMA.NS">Sun Pharma</option><option value="TATACONSUM.NS">TATACONSUM</option><option value="TVSMOTOR.NS">TVS Motor</option><option value="TCS.NS">Tata Consultancy Services</option><option value="TATAPOWER.NS">Tata Power</option><option value="TATASTEEL.NS">Tata Steel</option><option value="TECHM.NS">Tech Mahindra</option><option value="TITAN.NS">Titan Company</option><option value="TRENT.NS">Trent Limited</option><option value="UPL.NS">UPL</option><option value="ULTRACEMCO.NS">UltraTech Cement</option><option value="VOLTAS.NS">VOLTAS</option><option value="WIPRO.NS">Wipro</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Horizon (trading days)</label>
+        <select id="mc-horizon" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;">
+          <option value="10">10 (~2 weeks)</option>
+          <option value="21" selected>21 (~1 month)</option>
+          <option value="63">63 (~3 months)</option>
+          <option value="126">126 (~6 months)</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Simulations</label>
+        <select id="mc-nsims" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;">
+          <option value="200">200</option>
+          <option value="500" selected>500</option>
+          <option value="2000">2000</option>
+        </select>
+      </div>
+      <button id="mc-reroll" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--series-1);color:white;font-weight:600;font-size:13px;cursor:pointer;">Re-roll</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--series-1)"></span>Median path</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--series-3);opacity:.5"></span>25th&ndash;75th percentile band</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--ink-muted);opacity:.3"></span>Individual simulated paths</div>
+    </div>
+    <div class="chart-wrap"><svg id="chart-mc" style="width:100%;height:auto;"></svg></div>
+  </div>
+</section>
+
+<section>
+  <div class="kpi-row" id="mc-stats">
+    <div class="kpi"><div class="label">Current price</div><div class="value " id="mc-current">&mdash;</div></div>
+    <div class="kpi"><div class="label">Median simulated price</div><div class="value " id="mc-median">&mdash;</div></div>
+    <div class="kpi"><div class="label">5th&ndash;95th percentile range</div><div class="value " id="mc-range">&mdash;</div></div>
+    <div class="kpi"><div class="label">P(price higher at horizon)</div><div class="value " id="mc-prob-up">&mdash;</div></div>
+    <div class="kpi"><div class="label">Annualized volatility used</div><div class="value " id="mc-vol">&mdash;</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Terminal price distribution</h2>
+  <p class="lede">Where simulated prices actually land at the end of the horizon &mdash; the shape here is more intuitive to read as "probability" than the cone above.</p>
+  <div class="chart-card">
+    <div class="chart-wrap"><svg id="chart-hist" style="width:100%;height:auto;"></svg></div>
+  </div>
+</section>
+
+<section>
+  <h2>Risk metrics from the same simulation</h2>
+  <div class="kpi-row">
+    <div class="kpi"><div class="label">95% Value at Risk</div><div class="value neg" id="mc-var95">&mdash;</div></div>
+    <div class="kpi"><div class="label">95% Expected Shortfall</div><div class="value neg" id="mc-cvar95">&mdash;</div></div>
+    <div class="kpi"><div class="label">Median max drawdown</div><div class="value " id="mc-maxdd-median">&mdash;</div></div>
+    <div class="kpi"><div class="label">P(touches +10% anytime)</div><div class="value pos" id="mc-touch-up">&mdash;</div></div>
+    <div class="kpi"><div class="label">P(touches -10% anytime)</div><div class="value neg" id="mc-touch-down">&mdash;</div></div>
+  </div>
+  <p class="lede" style="margin-top:10px;">VaR/Expected Shortfall describe the ending-price distribution. Touch probabilities are different and usually larger &mdash;
+  they ask whether price crosses a threshold <em>at any point</em> during the horizon, which is what actually matters for a stop-loss, not just where it ends up.</p>
+</section>
+
+<section>
+  <div class="callout">
+    <b>Reading this chart:</b> the drift/volatility come from the stock's own trailing 12-month price history, so a
+    stock in a recent downtrend (negative drift) will show a cone skewed downward &mdash; that's the model reflecting
+    recent history, not a prediction that the trend continues. Wider cones = higher historical volatility. Use this
+    to calibrate how much uncertainty is actually normal for a given stock, not as a trade signal on its own.
+  </div>
+</section>
+
+<script>
+const MC_PARAMS = {"RELIANCE.NS": {"mu": -0.0005893731123576448, "sigma": 0.0130332333737595, "last_price": 1182.0, "n_obs": 252}, "TCS.NS": {"mu": -0.0012480503324094607, "sigma": 0.017860834604219906, "last_price": 2032.4000244140625, "n_obs": 252}, "HDFCBANK.NS": {"mu": -0.0009993629194416608, "sigma": 0.013526250629958417, "last_price": 722.7000122070312, "n_obs": 252}, "ICICIBANK.NS": {"mu": -0.0001684490812325175, "sigma": 0.012169122689543356, "last_price": 1292.199951171875, "n_obs": 252}, "INFY.NS": {"mu": -0.0012655579647413923, "sigma": 0.018796460951880183, "last_price": 1015.4000244140624, "n_obs": 252}, "HINDUNILVR.NS": {"mu": -0.0011128242475525625, "sigma": 0.013608034253044778, "last_price": 1863.800048828125, "n_obs": 252}, "ITC.NS": {"mu": -0.001493678587860725, "sigma": 0.013041698617078714, "last_price": 265.1000061035156, "n_obs": 252}, "SBIN.NS": {"mu": 0.0005408815494510414, "sigma": 0.01476191659998012, "last_price": 964.7000122070312, "n_obs": 252}, "BHARTIARTL.NS": {"mu": -0.00026344772805416685, "sigma": 0.01304367929153549, "last_price": 1771.199951171875, "n_obs": 252}, "KOTAKBANK.NS": {"mu": 7.625780381722403e-05, "sigma": 0.013244121771896584, "last_price": 406.0, "n_obs": 252}, "LT.NS": {"mu": 5.9371476856071026e-05, "sigma": 0.015713808388436692, "last_price": 3749.10009765625, "n_obs": 252}, "AXISBANK.NS": {"mu": 0.0001979805946549805, "sigma": 0.015586574177303674, "last_price": 1212.0999755859375, "n_obs": 252}, "BAJFINANCE.NS": {"mu": -2.146354338921458e-05, "sigma": 0.019211624524393126, "last_price": 973.7999877929688, "n_obs": 252}, "MARUTI.NS": {"mu": -0.0012131315331796642, "sigma": 0.014572349864992073, "last_price": 11877.0, "n_obs": 252}, "SUNPHARMA.NS": {"mu": 0.0006773686332814468, "sigma": 0.012058977129693763, "last_price": 1865.0, "n_obs": 252}, "TITAN.NS": {"mu": 0.0013624757434373233, "sigma": 0.014721512586080466, "last_price": 4675.0, "n_obs": 252}, "ULTRACEMCO.NS": {"mu": -0.0003503539253148479, "sigma": 0.01447390065477714, "last_price": 10829.0, "n_obs": 252}, "NESTLEIND.NS": {"mu": 0.0006207760779694823, "sigma": 0.012705064866047886, "last_price": 1345.699951171875, "n_obs": 252}, "WIPRO.NS": {"mu": -0.0014722963555370689, "sigma": 0.015943738338412346, "last_price": 156.7899932861328, "n_obs": 252}, "HCLTECH.NS": {"mu": -0.00035051061594468133, "sigma": 0.018235922304020193, "last_price": 1222.0, "n_obs": 252}, "TECHM.NS": {"mu": 0.00042283688423620856, "sigma": 0.01727634941925414, "last_price": 1510.5, "n_obs": 252}, "ASIANPAINT.NS": {"mu": 0.0001609146437502987, "sigma": 0.014995170020067387, "last_price": 2415.0, "n_obs": 252}, "BRITANNIA.NS": {"mu": -0.0007381848829905336, "sigma": 0.012062719633286043, "last_price": 4835.0, "n_obs": 252}, "DABUR.NS": {"mu": -0.001010833036886754, "sigma": 0.014184562458846067, "last_price": 380.3999938964844, "n_obs": 252}, "GODREJCP.NS": {"mu": -0.0011478267206380581, "sigma": 0.016593539844450413, "last_price": 855.0, "n_obs": 252}, "MARICO.NS": {"mu": 0.0004930994377308932, "sigma": 0.011590048073094451, "last_price": 787.1500244140625, "n_obs": 252}, "COLPAL.NS": {"mu": -0.0007836937289542794, "sigma": 0.015229568324959045, "last_price": 1785.0999755859375, "n_obs": 252}, "TATACONSUM.NS": {"mu": -0.0005430258079243715, "sigma": 0.014175958403818939, "last_price": 967.7000122070312, "n_obs": 252}, "TRENT.NS": {"mu": -0.0022727168739470668, "sigma": 0.03265800608702217, "last_price": 2635.0, "n_obs": 252}, "DMART.NS": {"mu": -0.0007391637558608981, "sigma": 0.014983666648635385, "last_price": 3750.0, "n_obs": 252}, "ADANIPORTS.NS": {"mu": 0.001084916067376534, "sigma": 0.018249558375061474, "last_price": 1822.0, "n_obs": 252}, "POWERGRID.NS": {"mu": -0.00017405881911407664, "sigma": 0.01277710020156778, "last_price": 261.5, "n_obs": 252}, "NTPC.NS": {"mu": -6.678745164129395e-05, "sigma": 0.011859719331069154, "last_price": 323.5, "n_obs": 252}, "TATAPOWER.NS": {"mu": -0.00024056246654350792, "sigma": 0.013379844037958104, "last_price": 359.0, "n_obs": 252}, "ONGC.NS": {"mu": 6.920340905311859e-05, "sigma": 0.014839155121775926, "last_price": 230.0, "n_obs": 252}, "BPCL.NS": {"mu": -0.00012618143041206876, "sigma": 0.01853331635042921, "last_price": 299.3500061035156, "n_obs": 252}, "IOC.NS": {"mu": -0.0001893228575617845, "sigma": 0.016448761379285606, "last_price": 131.3300018310547, "n_obs": 252}, "COALINDIA.NS": {"mu": 0.0006104746685043491, "sigma": 0.014419770833986911, "last_price": 425.0, "n_obs": 252}, "GAIL.NS": {"mu": 8.736740784165134e-05, "sigma": 0.015753550039068892, "last_price": 170.0399932861328, "n_obs": 252}, "PETRONET.NS": {"mu": 0.00037811690373085443, "sigma": 0.01864913032797416, "last_price": 282.95001220703125, "n_obs": 252}, "HDFCLIFE.NS": {"mu": -0.0014877019376845805, "sigma": 0.015165712940663907, "last_price": 523.5499877929688, "n_obs": 252}, "SBILIFE.NS": {"mu": -0.00013779062909426216, "sigma": 0.013083019239598398, "last_price": 1735.0, "n_obs": 252}, "ICICIPRULI.NS": {"mu": -0.001079124072101144, "sigma": 0.016687121999888185, "last_price": 444.5499877929687, "n_obs": 252}, "ICICIGI.NS": {"mu": -0.00085810273356295, "sigma": 0.015800116570522042, "last_price": 1515.0, "n_obs": 252}, "BAJAJFINSV.NS": {"mu": -0.0005501168568349584, "sigma": 0.01537641244994653, "last_price": 1742.4000244140625, "n_obs": 252}, "BAJAJ-AUTO.NS": {"mu": 0.0009166130095656886, "sigma": 0.014103111838313488, "last_price": 10811.0, "n_obs": 252}, "HDFCAMC.NS": {"mu": -0.0008441804793490132, "sigma": 0.01974741564507232, "last_price": 2223.300048828125, "n_obs": 252}, "INDUSINDBK.NS": {"mu": 0.0008338661689325195, "sigma": 0.018138820834248913, "last_price": 878.0, "n_obs": 252}, "BANKBARODA.NS": {"mu": -0.00022011323678684856, "sigma": 0.017435750972130966, "last_price": 227.67999267578125, "n_obs": 252}, "FEDERALBNK.NS": {"mu": 0.002046820980436899, "sigma": 0.016250809023181014, "last_price": 320.20001220703125, "n_obs": 252}, "AUBANK.NS": {"mu": 0.0012021718543975507, "sigma": 0.018672161230376183, "last_price": 1005.2000122070312, "n_obs": 252}, "DRREDDY.NS": {"mu": 2.1283934527914874e-05, "sigma": 0.014671594014671207, "last_price": 1251.9000244140625, "n_obs": 252}, "CIPLA.NS": {"mu": -0.00029425038415609525, "sigma": 0.012987524068473895, "last_price": 1379.300048828125, "n_obs": 252}, "DIVISLAB.NS": {"mu": 0.001879657302187062, "sigma": 0.015060962293092985, "last_price": 9431.0, "n_obs": 252}, "APOLLOHOSP.NS": {"mu": 0.0005748171549635698, "sigma": 0.011528980425706157, "last_price": 8659.0, "n_obs": 252}, "LUPIN.NS": {"mu": 0.00029312411432917034, "sigma": 0.012256653460448571, "last_price": 2052.10009765625, "n_obs": 252}, "HEROMOTOCO.NS": {"mu": 4.415116243109425e-05, "sigma": 0.01658229419639705, "last_price": 5208.0, "n_obs": 252}, "EICHERMOT.NS": {"mu": 0.00011498210416840133, "sigma": 0.016492487319014565, "last_price": 7179.0, "n_obs": 252}, "M&M.NS": {"mu": -0.0005207921385297323, "sigma": 0.016526724020656088, "last_price": 2947.800048828125, "n_obs": 252}, "TVSMOTOR.NS": {"mu": 0.0007313546429879781, "sigma": 0.016963155816575187, "last_price": 4091.10009765625, "n_obs": 252}, "ASHOKLEY.NS": {"mu": 0.0004033726265292031, "sigma": 0.022732694832450155, "last_price": 153.44000244140625, "n_obs": 252}, "BOSCHLTD.NS": {"mu": 0.0006796369075638548, "sigma": 0.017925027625921575, "last_price": 45700.0, "n_obs": 252}, "MOTHERSON.NS": {"mu": 0.0016299289330335934, "sigma": 0.02100503456075378, "last_price": 158.55999755859375, "n_obs": 252}, "BALKRISIND.NS": {"mu": -0.00043001041683423053, "sigma": 0.0210376324665332, "last_price": 2126.199951171875, "n_obs": 252}, "JSWSTEEL.NS": {"mu": 0.0004909007798324553, "sigma": 0.014962295781442451, "last_price": 1272.4000244140625, "n_obs": 252}, "TATASTEEL.NS": {"mu": 0.0005415433144809317, "sigma": 0.016248182514480743, "last_price": 188.0, "n_obs": 252}, "HINDALCO.NS": {"mu": 0.0010130340909044874, "sigma": 0.01807458798194187, "last_price": 955.2000122070312, "n_obs": 252}, "JINDALSTEL.NS": {"mu": 0.00037672009526564665, "sigma": 0.01750343880969952, "last_price": 1130.0, "n_obs": 252}, "GRASIM.NS": {"mu": 0.0004923648751817531, "sigma": 0.014419019311910319, "last_price": 3100.0, "n_obs": 252}, "SHREECEM.NS": {"mu": -0.001080457030319515, "sigma": 0.014108293817426126, "last_price": 21900.0, "n_obs": 252}, "AMBUJACEM.NS": {"mu": -0.0017075079147693367, "sigma": 0.017122765048145888, "last_price": 365.75, "n_obs": 252}, "ACC.NS": {"mu": -0.001630935982184988, "sigma": 0.014191408001915505, "last_price": 1202.5999755859375, "n_obs": 252}, "DLF.NS": {"mu": -0.0003162543408319977, "sigma": 0.01879260697224934, "last_price": 653.0, "n_obs": 252}, "GODREJPROP.NS": {"mu": -0.0006969101402090785, "sigma": 0.022422706999324315, "last_price": 1634.4000244140625, "n_obs": 252}, "OBEROIRLTY.NS": {"mu": 0.00040422643257791575, "sigma": 0.017472850236616967, "last_price": 1762.9000244140625, "n_obs": 252}, "UPL.NS": {"mu": -0.0006999957901451256, "sigma": 0.020481032112272975, "last_price": 538.0, "n_obs": 252}, "SRF.NS": {"mu": -0.0005735291732877296, "sigma": 0.01856184387073444, "last_price": 2420.10009765625, "n_obs": 252}, "SIEMENS.NS": {"mu": 0.0006608465441148475, "sigma": 0.01896940279181287, "last_price": 3710.0, "n_obs": 252}, "ABB.NS": {"mu": 0.001065276803447891, "sigma": 0.01896282226976595, "last_price": 6660.5, "n_obs": 252}, "HAVELLS.NS": {"mu": -0.0014284578646879128, "sigma": 0.015122747907789188, "last_price": 1043.300048828125, "n_obs": 252}, "VOLTAS.NS": {"mu": -0.0008075578244081799, "sigma": 0.01971590173492294, "last_price": 1090.0, "n_obs": 252}, "CROMPTON.NS": {"mu": -0.0012430222330284864, "sigma": 0.018437021388332062, "last_price": 211.3699951171875, "n_obs": 252}, "BEL.NS": {"mu": -6.030199485912752e-05, "sigma": 0.015626390350159114, "last_price": 387.75, "n_obs": 252}, "HAL.NS": {"mu": -0.00011881868699781537, "sigma": 0.017373263699123908, "last_price": 4549.2998046875, "n_obs": 252}, "INDIGO.NS": {"mu": -0.000605071124410556, "sigma": 0.02134736095698213, "last_price": 4872.0, "n_obs": 252}};
+const MC_TICKER_INFO = { holdings: [], picks: [] };
+
+function boxMuller() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function simulate(ticker, horizonDays, nSims) {
+  const p = MC_PARAMS[ticker];
+  const paths = [];
+  for (let s = 0; s < nSims; s++) {
+    const path = [p.last_price];
+    let price = p.last_price;
+    for (let t = 0; t < horizonDays; t++) {
+      const z = boxMuller();
+      price = price * Math.exp((p.mu - 0.5 * p.sigma * p.sigma) + p.sigma * z);
+      path.push(price);
+    }
+    paths.push(path);
+  }
+  return paths;
+}
+
+function percentile(arr, p) {
+  const sorted = [...arr].sort((a,b) => a-b);
+  const idx = (sorted.length - 1) * p;
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+
+function drawFanChart(paths, horizonDays) {
+  const svg = document.getElementById('chart-mc');
+  const W = 860, H = 360, padL = 60, padR = 16, padT = 16, padB = 28;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+  const cs = getComputedStyle(document.documentElement);
+  const col = n => cs.getPropertyValue(n).trim();
+  const ns = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+
+  const n = horizonDays + 1;
+  const bands = {p5: [], p25: [], p50: [], p75: [], p95: []};
+  for (let t = 0; t < n; t++) {
+    const vals = paths.map(p => p[t]);
+    bands.p5.push(percentile(vals, 0.05));
+    bands.p25.push(percentile(vals, 0.25));
+    bands.p50.push(percentile(vals, 0.50));
+    bands.p75.push(percentile(vals, 0.75));
+    bands.p95.push(percentile(vals, 0.95));
+  }
+
+  const allVals = [...bands.p5, ...bands.p95];
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+  const pad = (maxV - minV) * 0.06 || 1;
+  const yMin = minV - pad, yMax = maxV + pad;
+  const x = i => padL + (i/(n-1)) * plotW;
+  const y = v => padT + plotH - ((v - yMin)/(yMax - yMin)) * plotH;
+
+  for (let i=0;i<=4;i++) {
+    const v = yMin + (yMax-yMin)*i/4, gy = y(v);
+    svg.appendChild(el('line', {x1:padL, x2:W-padR, y1:gy, y2:gy, stroke: col('--grid'), 'stroke-width':1}));
+    const t = el('text', {x: padL-8, y: gy+3, 'text-anchor':'end', fill: col('--ink-muted'), 'font-size':10.5, 'font-family':'IBM Plex Mono, monospace'});
+    t.textContent = '₹' + Math.round(v).toLocaleString('en-IN');
+    svg.appendChild(t);
+  }
+  svg.appendChild(el('line', {x1:padL, x2:padL, y1:padT, y2:padT+plotH, stroke: col('--baseline'), 'stroke-width':1}));
+  [0, Math.floor((n-1)/2), n-1].forEach(i => {
+    const t = el('text', {x: x(i), y: H-8, 'text-anchor': i===0?'start':(i===n-1?'end':'middle'), fill: col('--ink-muted'), 'font-size':10.5, 'font-family':'IBM Plex Mono, monospace'});
+    t.textContent = i === 0 ? 'today' : `+${i}d`;
+    svg.appendChild(t);
+  });
+
+  // faint individual sample paths (cap at 60 drawn, for visual "spaghetti" without killing perf)
+  const sampleCount = Math.min(paths.length, 60);
+  for (let s = 0; s < sampleCount; s++) {
+    const pts = paths[s].map((v,i) => `${x(i)},${y(v)}`).join(' ');
+    svg.appendChild(el('polyline', {points: pts, fill:'none', stroke: col('--ink-muted'), 'stroke-width':1, opacity:0.15}));
+  }
+
+  // 25-75 band as filled area
+  const bandPts = bands.p25.map((v,i) => `${x(i)},${y(v)}`).join(' ') + ' ' +
+                  bands.p75.slice().reverse().map((v,i) => `${x(n-1-i)},${y(v)}`).join(' ');
+  svg.appendChild(el('polygon', {points: bandPts, fill: col('--series-3'), opacity:0.18}));
+
+  // p5/p95 boundary lines
+  [['p5', '--critical'], ['p95', '--good']].forEach(([key, colorVar]) => {
+    const pts = bands[key].map((v,i) => `${x(i)},${y(v)}`).join(' ');
+    svg.appendChild(el('polyline', {points: pts, fill:'none', stroke: col(colorVar), 'stroke-width':1.5, 'stroke-dasharray':'3 3', opacity:0.6}));
+  });
+
+  // median line, emphasized
+  const medPts = bands.p50.map((v,i) => `${x(i)},${y(v)}`).join(' ');
+  svg.appendChild(el('polyline', {points: medPts, fill:'none', stroke: col('--series-1'), 'stroke-width':2.5, 'stroke-linejoin':'round', 'stroke-linecap':'round'}));
+
+  return bands;
+}
+
+function drawHistogram(finalPrices, currentPrice) {
+  const svg = document.getElementById('chart-hist');
+  const W = 860, H = 240, padL = 56, padR = 16, padT = 16, padB = 28;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+  const cs = getComputedStyle(document.documentElement);
+  const col = n => cs.getPropertyValue(n).trim();
+  const ns = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+
+  const nBins = 30;
+  const minV = Math.min(...finalPrices), maxV = Math.max(...finalPrices);
+  const binW = (maxV - minV) / nBins || 1;
+  const bins = new Array(nBins).fill(0);
+  finalPrices.forEach(v => {
+    let idx = Math.floor((v - minV) / binW);
+    if (idx >= nBins) idx = nBins - 1;
+    if (idx < 0) idx = 0;
+    bins[idx]++;
+  });
+  const maxCount = Math.max(...bins);
+
+  const x = i => padL + (i / nBins) * plotW;
+  const y = c => padT + plotH - (c / maxCount) * plotH;
+  const barW = plotW / nBins;
+
+  bins.forEach((c, i) => {
+    const binCenter = minV + (i + 0.5) * binW;
+    const isAboveCurrent = binCenter >= currentPrice;
+    svg.appendChild(el('rect', {
+      x: x(i) + 1, y: y(c), width: Math.max(barW - 2, 1), height: plotH - (y(c) - padT),
+      fill: isAboveCurrent ? col('--good') : col('--critical'), opacity: 0.55,
+    }));
+  });
+
+  const curX = padL + ((currentPrice - minV) / (maxV - minV)) * plotW;
+  svg.appendChild(el('line', {x1:curX, x2:curX, y1:padT, y2:padT+plotH, stroke: col('--ink-1'), 'stroke-width':1.5, 'stroke-dasharray':'4 3'}));
+  const lbl = el('text', {x:curX, y: padT - 4, 'text-anchor':'middle', fill: col('--ink-1'), 'font-size':10.5, 'font-family':'IBM Plex Mono, monospace', 'font-weight':600});
+  lbl.textContent = 'current: ₹' + currentPrice.toFixed(0);
+  svg.appendChild(lbl);
+
+  [0, Math.round(nBins/2), nBins].forEach(i => {
+    const v = minV + i * binW;
+    const t = el('text', {x: x(i), y: H-8, 'text-anchor': i===0?'start':(i===nBins?'end':'middle'), fill: col('--ink-muted'), 'font-size':10, 'font-family':'IBM Plex Mono, monospace'});
+    t.textContent = '₹' + Math.round(v).toLocaleString('en-IN');
+    svg.appendChild(t);
+  });
+}
+
+function computeRiskMetrics(paths, currentPrice) {
+  const finalPrices = paths.map(p => p[p.length - 1]);
+  const finalReturns = finalPrices.map(v => (v / currentPrice - 1) * 100);
+  const sortedReturns = [...finalReturns].sort((a,b) => a-b);
+  const var95Idx = Math.floor(sortedReturns.length * 0.05);
+  const var95 = sortedReturns[var95Idx]; // 5th percentile return = 95% VaR (as a loss, negative number)
+  const tailLosses = sortedReturns.slice(0, var95Idx + 1);
+  const cvar95 = tailLosses.reduce((a,b) => a+b, 0) / tailLosses.length;
+
+  const maxDrawdowns = paths.map(path => {
+    let peak = path[0], maxDD = 0;
+    for (const v of path) {
+      if (v > peak) peak = v;
+      const dd = (v / peak - 1) * 100;
+      if (dd < maxDD) maxDD = dd;
+    }
+    return maxDD;
+  });
+  const medianMaxDD = percentile(maxDrawdowns, 0.5);
+
+  const touchUp = paths.filter(path => path.some(v => v >= currentPrice * 1.10)).length / paths.length;
+  const touchDown = paths.filter(path => path.some(v => v <= currentPrice * 0.90)).length / paths.length;
+
+  return { var95, cvar95, medianMaxDD, touchUp, touchDown, finalPrices };
+}
+
+function updateStats(ticker, bands, nSims, lastPriceStartOfPaths) {
+  const p = MC_PARAMS[ticker];
+  const finalVals = {p5: bands.p5[bands.p5.length-1], p50: bands.p50[bands.p50.length-1], p95: bands.p95[bands.p95.length-1]};
+  document.getElementById('mc-current').textContent = '₹' + p.last_price.toFixed(2);
+  document.getElementById('mc-median').textContent = '₹' + finalVals.p50.toFixed(2);
+  document.getElementById('mc-range').textContent = '₹' + finalVals.p5.toFixed(0) + ' – ₹' + finalVals.p95.toFixed(0);
+  const annVol = (p.sigma * Math.sqrt(252) * 100).toFixed(1);
+  document.getElementById('mc-vol').textContent = annVol + '%';
+  const upColor = finalVals.p50 >= p.last_price ? 'var(--good)' : 'var(--critical)';
+  document.getElementById('mc-median').style.color = upColor;
+}
+
+function runSimulation() {
+  const ticker = document.getElementById('mc-ticker').value;
+  const horizon = parseInt(document.getElementById('mc-horizon').value);
+  const nSims = parseInt(document.getElementById('mc-nsims').value);
+  const currentPrice = MC_PARAMS[ticker].last_price;
+  const paths = simulate(ticker, horizon, nSims);
+  const bands = drawFanChart(paths, horizon);
+
+  const finalPrices = paths.map(p => p[p.length-1]);
+  const pUp = finalPrices.filter(v => v > currentPrice).length / finalPrices.length;
+  document.getElementById('mc-prob-up').textContent = (pUp*100).toFixed(1) + '%';
+  updateStats(ticker, bands, nSims);
+
+  drawHistogram(finalPrices, currentPrice);
+  const risk = computeRiskMetrics(paths, currentPrice);
+  document.getElementById('mc-var95').textContent = risk.var95.toFixed(1) + '%';
+  document.getElementById('mc-cvar95').textContent = risk.cvar95.toFixed(1) + '%';
+  document.getElementById('mc-maxdd-median').textContent = risk.medianMaxDD.toFixed(1) + '%';
+  document.getElementById('mc-touch-up').textContent = (risk.touchUp*100).toFixed(1) + '%';
+  document.getElementById('mc-touch-down').textContent = (risk.touchDown*100).toFixed(1) + '%';
+}
+
+document.getElementById('mc-ticker').addEventListener('change', runSimulation);
+document.getElementById('mc-horizon').addEventListener('change', runSimulation);
+document.getElementById('mc-nsims').addEventListener('change', runSimulation);
+document.getElementById('mc-reroll').addEventListener('click', runSimulation);
+runSimulation();
+</script>
+
+<footer class="site-footer">
+  Paper-trading bot &mdash; not investment advice. Backtested and live-run on NSE data; see the Backtest page for methodology and honest limitations.
+</footer>
+</div>

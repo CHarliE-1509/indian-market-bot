@@ -415,6 +415,343 @@ def generate_sentiment(bots):
     write_page("sentiment.html", page_shell("Sentiment Bot", "sentiment.html", body, bots.get("generated_at", "")[:16].replace("T"," ")))
 
 
+def generate_montecarlo(ledger, bots):
+    sys.path.insert(0, str(Path(__file__).resolve().parent / "bots"))
+    from bots import montecarlo_bot
+    from bots.sentiment_bot import COMPANY_NAMES
+
+    from data_fetch import fetch_universe, INDEX
+    from wide_universe import WIDE_UNIVERSE
+    data = fetch_universe(WIDE_UNIVERSE, force=False)
+    params = montecarlo_bot.run(data)
+
+    holdings = list(ledger.get("holdings", {}).keys())
+    decision_picks = [p["ticker"] for p in bots.get("decision", {}).get("final_picks", [])]
+    default_ticker = (holdings[0] if holdings else
+                       decision_picks[0] if decision_picks else
+                       "RELIANCE.NS")
+    if default_ticker not in params:
+        default_ticker = next(iter(params))
+
+    options_html = "".join(
+        f'<option value="{t}"{" selected" if t == default_ticker else ""}>{COMPANY_NAMES.get(t, t.replace(".NS",""))}</option>'
+        for t in sorted(params.keys(), key=lambda t: COMPANY_NAMES.get(t, t))
+    )
+    default_note = ("your current position" if default_ticker in holdings else
+                     "this cycle's top pick" if default_ticker in decision_picks else
+                     "no current position — showing an example")
+
+    body = f"""
+<header class="page-head">
+  <div class="eyebrow">Monte Carlo Bot</div>
+  <h1>Simulated future price paths</h1>
+  <p class="lede">Geometric Brownian Motion simulation using each stock's own historical drift and volatility
+  (trailing 252 trading days). This is a standard illustrative technique, not a forecast — GBM assumes
+  constant volatility and log-normal returns, so it misses fat tails, jumps, and regime changes. Read the
+  spread of outcomes, not any single path.</p>
+</header>
+
+<section>
+  <div class="card">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+      <div>
+        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Stock (defaulting to {default_note})</label>
+        <select id="mc-ticker" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;min-width:220px;">
+          {options_html}
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Horizon (trading days)</label>
+        <select id="mc-horizon" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;">
+          <option value="10">10 (~2 weeks)</option>
+          <option value="21" selected>21 (~1 month)</option>
+          <option value="63">63 (~3 months)</option>
+          <option value="126">126 (~6 months)</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Simulations</label>
+        <select id="mc-nsims" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;">
+          <option value="200">200</option>
+          <option value="500" selected>500</option>
+          <option value="2000">2000</option>
+        </select>
+      </div>
+      <button id="mc-reroll" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--series-1);color:white;font-weight:600;font-size:13px;cursor:pointer;">Re-roll</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--series-1)"></span>Median path</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--series-3);opacity:.5"></span>25th&ndash;75th percentile band</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--ink-muted);opacity:.3"></span>Individual simulated paths</div>
+    </div>
+    <div class="chart-wrap"><svg id="chart-mc" style="width:100%;height:auto;"></svg></div>
+  </div>
+</section>
+
+<section>
+  <div class="kpi-row" id="mc-stats">
+    {kpi("Current price", "&mdash;", "", "mc-current")}
+    {kpi("Median simulated price", "&mdash;", "", "mc-median")}
+    {kpi("5th&ndash;95th percentile range", "&mdash;", "", "mc-range")}
+    {kpi("P(price higher at horizon)", "&mdash;", "", "mc-prob-up")}
+    {kpi("Annualized volatility used", "&mdash;", "", "mc-vol")}
+  </div>
+</section>
+
+<section>
+  <h2>Terminal price distribution</h2>
+  <p class="lede">Where simulated prices actually land at the end of the horizon &mdash; the shape here is more intuitive to read as "probability" than the cone above.</p>
+  <div class="chart-card">
+    <div class="chart-wrap"><svg id="chart-hist" style="width:100%;height:auto;"></svg></div>
+  </div>
+</section>
+
+<section>
+  <h2>Risk metrics from the same simulation</h2>
+  <div class="kpi-row">
+    {kpi("95% Value at Risk", "&mdash;", "neg", "mc-var95")}
+    {kpi("95% Expected Shortfall", "&mdash;", "neg", "mc-cvar95")}
+    {kpi("Median max drawdown", "&mdash;", "", "mc-maxdd-median")}
+    {kpi("P(touches +10% anytime)", "&mdash;", "pos", "mc-touch-up")}
+    {kpi("P(touches -10% anytime)", "&mdash;", "neg", "mc-touch-down")}
+  </div>
+  <p class="lede" style="margin-top:10px;">VaR/Expected Shortfall describe the ending-price distribution. Touch probabilities are different and usually larger &mdash;
+  they ask whether price crosses a threshold <em>at any point</em> during the horizon, which is what actually matters for a stop-loss, not just where it ends up.</p>
+</section>
+
+<section>
+  <div class="callout">
+    <b>Reading this chart:</b> the drift/volatility come from the stock's own trailing 12-month price history, so a
+    stock in a recent downtrend (negative drift) will show a cone skewed downward &mdash; that's the model reflecting
+    recent history, not a prediction that the trend continues. Wider cones = higher historical volatility. Use this
+    to calibrate how much uncertainty is actually normal for a given stock, not as a trade signal on its own.
+  </div>
+</section>
+
+<script>
+const MC_PARAMS = {json.dumps(params)};
+const MC_TICKER_INFO = {{ holdings: {json.dumps(holdings)}, picks: {json.dumps(decision_picks)} }};
+
+function boxMuller() {{
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}}
+
+function simulate(ticker, horizonDays, nSims) {{
+  const p = MC_PARAMS[ticker];
+  const paths = [];
+  for (let s = 0; s < nSims; s++) {{
+    const path = [p.last_price];
+    let price = p.last_price;
+    for (let t = 0; t < horizonDays; t++) {{
+      const z = boxMuller();
+      price = price * Math.exp((p.mu - 0.5 * p.sigma * p.sigma) + p.sigma * z);
+      path.push(price);
+    }}
+    paths.push(path);
+  }}
+  return paths;
+}}
+
+function percentile(arr, p) {{
+  const sorted = [...arr].sort((a,b) => a-b);
+  const idx = (sorted.length - 1) * p;
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}}
+
+function drawFanChart(paths, horizonDays) {{
+  const svg = document.getElementById('chart-mc');
+  const W = 860, H = 360, padL = 60, padR = 16, padT = 16, padB = 28;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  svg.setAttribute('viewBox', `0 0 ${{W}} ${{H}}`);
+  svg.innerHTML = '';
+  const cs = getComputedStyle(document.documentElement);
+  const col = n => cs.getPropertyValue(n).trim();
+  const ns = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs) => {{ const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }};
+
+  const n = horizonDays + 1;
+  const bands = {{p5: [], p25: [], p50: [], p75: [], p95: []}};
+  for (let t = 0; t < n; t++) {{
+    const vals = paths.map(p => p[t]);
+    bands.p5.push(percentile(vals, 0.05));
+    bands.p25.push(percentile(vals, 0.25));
+    bands.p50.push(percentile(vals, 0.50));
+    bands.p75.push(percentile(vals, 0.75));
+    bands.p95.push(percentile(vals, 0.95));
+  }}
+
+  const allVals = [...bands.p5, ...bands.p95];
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+  const pad = (maxV - minV) * 0.06 || 1;
+  const yMin = minV - pad, yMax = maxV + pad;
+  const x = i => padL + (i/(n-1)) * plotW;
+  const y = v => padT + plotH - ((v - yMin)/(yMax - yMin)) * plotH;
+
+  for (let i=0;i<=4;i++) {{
+    const v = yMin + (yMax-yMin)*i/4, gy = y(v);
+    svg.appendChild(el('line', {{x1:padL, x2:W-padR, y1:gy, y2:gy, stroke: col('--grid'), 'stroke-width':1}}));
+    const t = el('text', {{x: padL-8, y: gy+3, 'text-anchor':'end', fill: col('--ink-muted'), 'font-size':10.5, 'font-family':'IBM Plex Mono, monospace'}});
+    t.textContent = '₹' + Math.round(v).toLocaleString('en-IN');
+    svg.appendChild(t);
+  }}
+  svg.appendChild(el('line', {{x1:padL, x2:padL, y1:padT, y2:padT+plotH, stroke: col('--baseline'), 'stroke-width':1}}));
+  [0, Math.floor((n-1)/2), n-1].forEach(i => {{
+    const t = el('text', {{x: x(i), y: H-8, 'text-anchor': i===0?'start':(i===n-1?'end':'middle'), fill: col('--ink-muted'), 'font-size':10.5, 'font-family':'IBM Plex Mono, monospace'}});
+    t.textContent = i === 0 ? 'today' : `+${{i}}d`;
+    svg.appendChild(t);
+  }});
+
+  // faint individual sample paths (cap at 60 drawn, for visual "spaghetti" without killing perf)
+  const sampleCount = Math.min(paths.length, 60);
+  for (let s = 0; s < sampleCount; s++) {{
+    const pts = paths[s].map((v,i) => `${{x(i)}},${{y(v)}}`).join(' ');
+    svg.appendChild(el('polyline', {{points: pts, fill:'none', stroke: col('--ink-muted'), 'stroke-width':1, opacity:0.15}}));
+  }}
+
+  // 25-75 band as filled area
+  const bandPts = bands.p25.map((v,i) => `${{x(i)}},${{y(v)}}`).join(' ') + ' ' +
+                  bands.p75.slice().reverse().map((v,i) => `${{x(n-1-i)}},${{y(v)}}`).join(' ');
+  svg.appendChild(el('polygon', {{points: bandPts, fill: col('--series-3'), opacity:0.18}}));
+
+  // p5/p95 boundary lines
+  [['p5', '--critical'], ['p95', '--good']].forEach(([key, colorVar]) => {{
+    const pts = bands[key].map((v,i) => `${{x(i)}},${{y(v)}}`).join(' ');
+    svg.appendChild(el('polyline', {{points: pts, fill:'none', stroke: col(colorVar), 'stroke-width':1.5, 'stroke-dasharray':'3 3', opacity:0.6}}));
+  }});
+
+  // median line, emphasized
+  const medPts = bands.p50.map((v,i) => `${{x(i)}},${{y(v)}}`).join(' ');
+  svg.appendChild(el('polyline', {{points: medPts, fill:'none', stroke: col('--series-1'), 'stroke-width':2.5, 'stroke-linejoin':'round', 'stroke-linecap':'round'}}));
+
+  return bands;
+}}
+
+function drawHistogram(finalPrices, currentPrice) {{
+  const svg = document.getElementById('chart-hist');
+  const W = 860, H = 240, padL = 56, padR = 16, padT = 16, padB = 28;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  svg.setAttribute('viewBox', `0 0 ${{W}} ${{H}}`);
+  svg.innerHTML = '';
+  const cs = getComputedStyle(document.documentElement);
+  const col = n => cs.getPropertyValue(n).trim();
+  const ns = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs) => {{ const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }};
+
+  const nBins = 30;
+  const minV = Math.min(...finalPrices), maxV = Math.max(...finalPrices);
+  const binW = (maxV - minV) / nBins || 1;
+  const bins = new Array(nBins).fill(0);
+  finalPrices.forEach(v => {{
+    let idx = Math.floor((v - minV) / binW);
+    if (idx >= nBins) idx = nBins - 1;
+    if (idx < 0) idx = 0;
+    bins[idx]++;
+  }});
+  const maxCount = Math.max(...bins);
+
+  const x = i => padL + (i / nBins) * plotW;
+  const y = c => padT + plotH - (c / maxCount) * plotH;
+  const barW = plotW / nBins;
+
+  bins.forEach((c, i) => {{
+    const binCenter = minV + (i + 0.5) * binW;
+    const isAboveCurrent = binCenter >= currentPrice;
+    svg.appendChild(el('rect', {{
+      x: x(i) + 1, y: y(c), width: Math.max(barW - 2, 1), height: plotH - (y(c) - padT),
+      fill: isAboveCurrent ? col('--good') : col('--critical'), opacity: 0.55,
+    }}));
+  }});
+
+  const curX = padL + ((currentPrice - minV) / (maxV - minV)) * plotW;
+  svg.appendChild(el('line', {{x1:curX, x2:curX, y1:padT, y2:padT+plotH, stroke: col('--ink-1'), 'stroke-width':1.5, 'stroke-dasharray':'4 3'}}));
+  const lbl = el('text', {{x:curX, y: padT - 4, 'text-anchor':'middle', fill: col('--ink-1'), 'font-size':10.5, 'font-family':'IBM Plex Mono, monospace', 'font-weight':600}});
+  lbl.textContent = 'current: ₹' + currentPrice.toFixed(0);
+  svg.appendChild(lbl);
+
+  [0, Math.round(nBins/2), nBins].forEach(i => {{
+    const v = minV + i * binW;
+    const t = el('text', {{x: x(i), y: H-8, 'text-anchor': i===0?'start':(i===nBins?'end':'middle'), fill: col('--ink-muted'), 'font-size':10, 'font-family':'IBM Plex Mono, monospace'}});
+    t.textContent = '₹' + Math.round(v).toLocaleString('en-IN');
+    svg.appendChild(t);
+  }});
+}}
+
+function computeRiskMetrics(paths, currentPrice) {{
+  const finalPrices = paths.map(p => p[p.length - 1]);
+  const finalReturns = finalPrices.map(v => (v / currentPrice - 1) * 100);
+  const sortedReturns = [...finalReturns].sort((a,b) => a-b);
+  const var95Idx = Math.floor(sortedReturns.length * 0.05);
+  const var95 = sortedReturns[var95Idx]; // 5th percentile return = 95% VaR (as a loss, negative number)
+  const tailLosses = sortedReturns.slice(0, var95Idx + 1);
+  const cvar95 = tailLosses.reduce((a,b) => a+b, 0) / tailLosses.length;
+
+  const maxDrawdowns = paths.map(path => {{
+    let peak = path[0], maxDD = 0;
+    for (const v of path) {{
+      if (v > peak) peak = v;
+      const dd = (v / peak - 1) * 100;
+      if (dd < maxDD) maxDD = dd;
+    }}
+    return maxDD;
+  }});
+  const medianMaxDD = percentile(maxDrawdowns, 0.5);
+
+  const touchUp = paths.filter(path => path.some(v => v >= currentPrice * 1.10)).length / paths.length;
+  const touchDown = paths.filter(path => path.some(v => v <= currentPrice * 0.90)).length / paths.length;
+
+  return {{ var95, cvar95, medianMaxDD, touchUp, touchDown, finalPrices }};
+}}
+
+function updateStats(ticker, bands, nSims, lastPriceStartOfPaths) {{
+  const p = MC_PARAMS[ticker];
+  const finalVals = {{p5: bands.p5[bands.p5.length-1], p50: bands.p50[bands.p50.length-1], p95: bands.p95[bands.p95.length-1]}};
+  document.getElementById('mc-current').textContent = '₹' + p.last_price.toFixed(2);
+  document.getElementById('mc-median').textContent = '₹' + finalVals.p50.toFixed(2);
+  document.getElementById('mc-range').textContent = '₹' + finalVals.p5.toFixed(0) + ' – ₹' + finalVals.p95.toFixed(0);
+  const annVol = (p.sigma * Math.sqrt(252) * 100).toFixed(1);
+  document.getElementById('mc-vol').textContent = annVol + '%';
+  const upColor = finalVals.p50 >= p.last_price ? 'var(--good)' : 'var(--critical)';
+  document.getElementById('mc-median').style.color = upColor;
+}}
+
+function runSimulation() {{
+  const ticker = document.getElementById('mc-ticker').value;
+  const horizon = parseInt(document.getElementById('mc-horizon').value);
+  const nSims = parseInt(document.getElementById('mc-nsims').value);
+  const currentPrice = MC_PARAMS[ticker].last_price;
+  const paths = simulate(ticker, horizon, nSims);
+  const bands = drawFanChart(paths, horizon);
+
+  const finalPrices = paths.map(p => p[p.length-1]);
+  const pUp = finalPrices.filter(v => v > currentPrice).length / finalPrices.length;
+  document.getElementById('mc-prob-up').textContent = (pUp*100).toFixed(1) + '%';
+  updateStats(ticker, bands, nSims);
+
+  drawHistogram(finalPrices, currentPrice);
+  const risk = computeRiskMetrics(paths, currentPrice);
+  document.getElementById('mc-var95').textContent = risk.var95.toFixed(1) + '%';
+  document.getElementById('mc-cvar95').textContent = risk.cvar95.toFixed(1) + '%';
+  document.getElementById('mc-maxdd-median').textContent = risk.medianMaxDD.toFixed(1) + '%';
+  document.getElementById('mc-touch-up').textContent = (risk.touchUp*100).toFixed(1) + '%';
+  document.getElementById('mc-touch-down').textContent = (risk.touchDown*100).toFixed(1) + '%';
+}}
+
+document.getElementById('mc-ticker').addEventListener('change', runSimulation);
+document.getElementById('mc-horizon').addEventListener('change', runSimulation);
+document.getElementById('mc-nsims').addEventListener('change', runSimulation);
+document.getElementById('mc-reroll').addEventListener('click', runSimulation);
+runSimulation();
+</script>
+"""
+    write_page("montecarlo.html", page_shell("Monte Carlo Simulation", "montecarlo.html", body, bots.get("generated_at", "")[:16].replace("T"," ")))
+
+
 def generate_backtest():
     summary_path = RESULTS / "single_asset_summary.csv"
     wide_summary = load_json("wide_summary.json", {})
@@ -475,6 +812,7 @@ def main():
     generate_quant(bots)
     generate_technical(bots)
     generate_sentiment(bots)
+    generate_montecarlo(ledger, bots)
     generate_backtest()
     print(f"Site generated in {DOCS}")
 
