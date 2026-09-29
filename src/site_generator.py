@@ -419,11 +419,17 @@ def generate_montecarlo(ledger, bots):
     sys.path.insert(0, str(Path(__file__).resolve().parent / "bots"))
     from bots import montecarlo_bot
     from bots.sentiment_bot import COMPANY_NAMES
+    from sector_map import SECTOR_MAP
 
     from data_fetch import fetch_universe, INDEX
     from wide_universe import WIDE_UNIVERSE
     data = fetch_universe(WIDE_UNIVERSE, force=False)
     params = montecarlo_bot.run(data)
+
+    technical_full = bots.get("technical", {})
+    quant_full = bots.get("quant", {})
+    sentiment_full = bots.get("sentiment", {})
+    regime_full = bots.get("decision", {}).get("regime", {})
 
     holdings = list(ledger.get("holdings", {}).keys())
     decision_picks = [p["ticker"] for p in bots.get("decision", {}).get("final_picks", [])]
@@ -521,6 +527,17 @@ def generate_montecarlo(ledger, bots):
 </section>
 
 <section>
+  <h2>What's driving this stock's simulated path</h2>
+  <p class="lede">The simulation's drift and volatility come from this stock's own recent price history &mdash; these are the actual computed signals
+  (from the Technical, Quant, and Sentiment bots) that make up that history. Ranked by how unusual/significant each reading is, not by importance I've judged subjectively.
+  This is <b>evidence, not a causal story</b> &mdash; it tells you what the data shows, not confirmed reasons why. A model with real reasoning (an LLM
+  actually researching the news) would need a paid API wired into the pipeline; this uses only what the bots already computed.</p>
+  <div class="card">
+    <ol id="mc-reasons" style="margin:0;padding-left:22px;line-height:1.9;font-size:13.5px;"></ol>
+  </div>
+</section>
+
+<section>
   <div class="callout">
     <b>Reading this chart:</b> the drift/volatility come from the stock's own trailing 12-month price history, so a
     stock in a recent downtrend (negative drift) will show a cone skewed downward &mdash; that's the model reflecting
@@ -532,6 +549,11 @@ def generate_montecarlo(ledger, bots):
 <script>
 const MC_PARAMS = {json.dumps(params)};
 const MC_TICKER_INFO = {{ holdings: {json.dumps(holdings)}, picks: {json.dumps(decision_picks)} }};
+const TECH_DATA = {json.dumps(technical_full)};
+const QUANT_DATA = {json.dumps(quant_full)};
+const SENTIMENT_DATA = {json.dumps(sentiment_full)};
+const SECTOR_MAP_JS = {json.dumps(SECTOR_MAP)};
+const REGIME_DATA = {json.dumps(regime_full)};
 
 function boxMuller() {{
   let u = 0, v = 0;
@@ -708,6 +730,167 @@ function computeRiskMetrics(paths, currentPrice) {{
   return {{ var95, cvar95, medianMaxDD, touchUp, touchDown, finalPrices }};
 }}
 
+function rankSectors() {{
+  const bySector = {{}};
+  for (const [ticker, sector] of Object.entries(SECTOR_MAP_JS)) {{
+    const t = TECH_DATA[ticker], q = QUANT_DATA[ticker];
+    if (!t || t.score === undefined || !q || q.insufficient_data) continue;
+    const combined = (t.score || 0) + (q.momentum_12_1 || 0) * 2;
+    (bySector[sector] = bySector[sector] || []).push(combined);
+  }}
+  const ranked = Object.entries(bySector)
+    .map(([sector, vals]) => [sector, vals.reduce((a,b)=>a+b,0) / vals.length])
+    .sort((a,b) => b[1] - a[1]);
+  return ranked; // [[sector, avgScore], ...] descending
+}}
+
+function computeReasons(ticker) {{
+  const t = TECH_DATA[ticker], q = QUANT_DATA[ticker], s = SENTIMENT_DATA[ticker];
+  const sector = SECTOR_MAP_JS[ticker];
+  const reasons = [];
+
+  if (REGIME_DATA.pct_vs_sma200 !== undefined) {{
+    const v = REGIME_DATA.pct_vs_sma200;
+    reasons.push({{
+      severity: Math.abs(v) * 3, // macro affects every stock, weight it up
+      direction: v >= 0 ? 'bullish' : 'bearish',
+      label: 'Macro regime',
+      detail: `NIFTY is ${{v >= 0 ? '+' : ''}}${{v.toFixed(1)}}% vs its 200-day average (ADX ${{REGIME_DATA.adx}}, classified ${{REGIME_DATA.mode || 'n/a'}}) — broad market conditions affect almost every stock right now, not just this one.`
+    }});
+  }}
+
+  if (sector) {{
+    const ranked = rankSectors();
+    const idx = ranked.findIndex(([sec]) => sec === sector);
+    if (idx >= 0) {{
+      const [, score] = ranked[idx];
+      reasons.push({{
+        severity: Math.abs(score) * 2,
+        direction: score >= 0 ? 'bullish' : 'bearish',
+        label: 'Sector performance',
+        detail: `${{sector}} sector ranks ${{idx+1}} of ${{ranked.length}} sectors by combined technical+momentum score (avg ${{score.toFixed(2)}}) — sector-wide rotation, not stock-specific.`
+      }});
+    }}
+  }}
+
+  if (q && !q.insufficient_data) {{
+    if (q.relative_mispricing_vs_nifty_pct != null) {{
+      const v = q.relative_mispricing_vs_nifty_pct;
+      reasons.push({{
+        severity: Math.abs(v) * 1.2,
+        direction: v >= 0 ? 'bullish' : 'bearish',
+        label: 'Relative strength vs NIFTY',
+        detail: `Stock has ${{v >= 0 ? 'outperformed' : 'underperformed'}} NIFTY by ${{Math.abs(v).toFixed(1)}} percentage points over the last 50 days — a stock-specific move, since it's measured relative to the index.`
+      }});
+    }}
+    if (q.momentum_12_1 != null) {{
+      const v = q.momentum_12_1 * 100;
+      reasons.push({{
+        severity: Math.abs(v) * 0.8,
+        direction: v >= 0 ? 'bullish' : 'bearish',
+        label: '12-1 month momentum',
+        detail: `12-month return (excluding the most recent month, the standard momentum construction) is ${{v >= 0 ? '+' : ''}}${{v.toFixed(1)}}% — this is the exact signal the backtested portfolio strategy ranks stocks by.`
+      }});
+    }}
+    if (q.beta_vs_nifty != null) {{
+      const v = q.beta_vs_nifty;
+      reasons.push({{
+        severity: Math.abs(v - 1) * 15,
+        direction: 'neutral',
+        label: 'Beta vs NIFTY',
+        detail: `Beta of ${{v.toFixed(2)}} means this stock's moves are typically ${{v > 1 ? 'amplified' : 'dampened'}} relative to the index (${{(v*100).toFixed(0)}}% of NIFTY's move, on average) — ${{v > 1.3 ? 'high systematic risk sensitivity' : v < 0.7 ? 'relatively defensive' : 'roughly market-like sensitivity'}}.`
+      }});
+    }}
+    if (q.annualized_volatility_pct != null) {{
+      reasons.push({{
+        severity: Math.max(0, q.annualized_volatility_pct - 20) * 0.6,
+        direction: 'neutral',
+        label: 'Realized volatility',
+        detail: `${{q.annualized_volatility_pct.toFixed(1)}}% annualized volatility (trailing 3 months) — this directly sets how wide the simulation's cone is; higher vol means more uncertainty at every horizon.`
+      }});
+    }}
+  }}
+
+  if (t && t.score !== undefined) {{
+    reasons.push({{
+      severity: Math.abs(t.components.trend_alignment) * 12,
+      direction: t.components.trend_alignment >= 0 ? 'bullish' : 'bearish',
+      label: 'Trend alignment',
+      detail: `Price ₹${{t.price}} is ${{t.price > t.sma200 ? 'above' : 'below'}} its 200-day average (₹${{t.sma200}}) and ${{t.price > t.sma50 ? 'above' : 'below'}} its 50-day average (₹${{t.sma50}}) — ${{t.components.trend_alignment > 0.3 ? 'consistently aligned uptrend' : t.components.trend_alignment < -0.3 ? 'consistently aligned downtrend' : 'mixed signals across timeframes'}}.`
+    }});
+    reasons.push({{
+      severity: Math.abs(t.components.macd_momentum) * 10,
+      direction: t.components.macd_momentum >= 0 ? 'bullish' : 'bearish',
+      label: 'MACD momentum',
+      detail: `MACD histogram is ${{t.components.macd_momentum >= 0 ? 'positive' : 'negative'}} (${{t.components.macd_momentum.toFixed(2)}} normalized) — ${{t.components.macd_momentum >= 0 ? 'upward' : 'downward'}} momentum is currently building, not just present.`
+    }});
+    const rsiExtreme = t.rsi14 > 65 ? (t.rsi14 - 50) : t.rsi14 < 35 ? (50 - t.rsi14) : 0;
+    reasons.push({{
+      severity: rsiExtreme * 0.9,
+      direction: t.rsi14 > 65 ? 'bearish' : t.rsi14 < 35 ? 'bullish' : 'neutral',
+      label: 'RSI positioning',
+      detail: `RSI(14) is ${{t.rsi14}} — ${{t.rsi14 > 70 ? 'overbought, some pullback risk' : t.rsi14 < 30 ? 'oversold, potential bounce territory' : 'neutral, no extreme positioning'}}.`
+    }});
+    reasons.push({{
+      severity: Math.abs(t.components.bollinger_position) * 8,
+      direction: t.components.bollinger_position >= 0 ? 'bearish' : 'bullish',
+      label: 'Bollinger Band position',
+      detail: `Price positioning within its 20-day Bollinger Bands is ${{t.components.bollinger_position > 0.3 ? 'near the upper band — extended' : t.components.bollinger_position < -0.3 ? 'near the lower band — potential support' : 'mid-band, unremarkable'}}.`
+    }});
+    reasons.push({{
+      severity: t.adx > 30 ? 8 : t.adx < 18 ? 4 : 1,
+      direction: 'neutral',
+      label: 'Trend strength (ADX)',
+      detail: `ADX of ${{t.adx}} classifies this as a ${{t.regime}} market for this stock — ${{t.regime === 'trending' ? 'directional moves tend to persist' : t.regime === 'choppy' ? 'momentum-style signals are less reliable here' : 'transitioning between regimes'}}.`
+    }});
+  }}
+
+  if (s && s.n_headlines > 0) {{
+    const top = s.top_headlines && s.top_headlines[0];
+    reasons.push({{
+      severity: Math.abs(s.score) * 25 + Math.min(s.n_headlines, 10),
+      direction: s.label === 'bullish' ? 'bullish' : s.label === 'bearish' ? 'bearish' : 'neutral',
+      label: 'News sentiment',
+      detail: `${{s.n_headlines}} recent headlines, net sentiment ${{s.score >= 0 ? '+' : ''}}${{s.score.toFixed(2)}} (${{s.label}}).${{top ? ' Top headline: "' + top.title + '" (' + top.source + ')' : ''}}`
+    }});
+  }} else {{
+    reasons.push({{
+      severity: 0.5,
+      direction: 'neutral',
+      label: 'News sentiment',
+      detail: `No recent headline data for this stock — sentiment is only fetched for stocks that qualify as momentum candidates each cycle, to limit request volume. Not evidence of anything either way.`
+    }});
+  }}
+
+  reasons.sort((a, b) => b.severity - a.severity);
+  return reasons.slice(0, 10);
+}}
+
+function renderReasons(ticker) {{
+  const list = document.getElementById('mc-reasons');
+  list.innerHTML = '';
+  const reasons = computeReasons(ticker);
+  const dirColor = {{bullish: 'var(--good)', bearish: 'var(--critical)', neutral: 'var(--ink-muted)'}};
+  reasons.forEach(r => {{
+    const li = document.createElement('li');
+    li.style.marginBottom = '10px';
+    const strong = document.createElement('strong');
+    strong.textContent = r.label + ' ';
+    strong.style.color = 'var(--ink-1)';
+    const dot = document.createElement('span');
+    dot.textContent = r.direction;
+    dot.style.cssText = `color:${{dirColor[r.direction]}};font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-right:6px;`;
+    const detail = document.createElement('span');
+    detail.textContent = r.detail; // textContent, not innerHTML — headline titles are untrusted data
+    detail.style.color = 'var(--ink-2)';
+    li.appendChild(dot);
+    li.appendChild(strong);
+    li.appendChild(document.createElement('br'));
+    li.appendChild(detail);
+    list.appendChild(li);
+  }});
+}}
+
 function updateStats(ticker, bands, nSims, lastPriceStartOfPaths) {{
   const p = MC_PARAMS[ticker];
   const finalVals = {{p5: bands.p5[bands.p5.length-1], p50: bands.p50[bands.p50.length-1], p95: bands.p95[bands.p95.length-1]}};
@@ -740,6 +923,8 @@ function runSimulation() {{
   document.getElementById('mc-maxdd-median').textContent = risk.medianMaxDD.toFixed(1) + '%';
   document.getElementById('mc-touch-up').textContent = (risk.touchUp*100).toFixed(1) + '%';
   document.getElementById('mc-touch-down').textContent = (risk.touchDown*100).toFixed(1) + '%';
+
+  renderReasons(ticker);
 }}
 
 document.getElementById('mc-ticker').addEventListener('change', runSimulation);
