@@ -937,6 +937,150 @@ runSimulation();
     write_page("montecarlo.html", page_shell("Monte Carlo Simulation", "montecarlo.html", body, bots.get("generated_at", "")[:16].replace("T"," ")))
 
 
+def generate_teamb():
+    tb_dir = RESULTS / "team_b"
+    research = json.loads((tb_dir / "research_summary.json").read_text()) if (tb_dir / "research_summary.json").exists() else {}
+    ledger = json.loads((tb_dir / "team_b_ledger.json").read_text()) if (tb_dir / "team_b_ledger.json").exists() else {}
+
+    diffusion = research.get("diffusion_tests", {})
+
+    def verdict_chip(text):
+        return chip(text, "critical" if "FAILED" in text else "good")
+
+    sector_test = diffusion.get("sector_liquidity_tier", {})
+    us_test = diffusion.get("us_overnight_index", {})
+    commodity_test = diffusion.get("commodity_to_equity", {})
+    adr_test = diffusion.get("adr_to_nse", {})
+
+    commodity_rows = ""
+    for t, r in commodity_test.get("results_by_ticker", {}).items():
+        lags = r["correlation_by_lag"]
+        commodity_rows += (f'<tr><td>{t.replace(".NS","")}</td><td>{r["note"]}</td>'
+                            f'<td>{lags.get("0","-")}</td><td>{lags.get("1","-")}</td><td>{lags.get("2","-")}</td>'
+                            f'<td>{lags.get("3","-")}</td><td>{lags.get("5","-")}</td></tr>')
+
+    adr_rows = ""
+    for pair, r in adr_test.get("results_by_pair", {}).items():
+        adr_rows += f'<tr><td>{pair}</td><td>{r["gap_correlation"]}</td><td>{r["intraday_correlation"]}</td></tr>'
+
+    consensus = research.get("analyst_consensus", {})
+    ranked = sorted(consensus.items(), key=lambda x: -x[1]["implied_return_pct"]) if consensus else []
+
+    def consensus_rows(items):
+        return "".join(f'<tr><td>{t.replace(".NS","")}</td><td>₹{r["current_price"]}</td><td>₹{r["target_mean_price"]:.0f}</td>'
+                        f'<td>{r["implied_return_pct"]:+.1f}%</td><td>{r["n_analysts"]}</td><td>{r["recommendation"]}</td></tr>'
+                        for t, r in items)
+
+    body = f"""
+<header class="page-head">
+  <div class="eyebrow">Team B &middot; fully independent from the main strategy &middot; Rs {ledger.get('capital_initial', 20000):,} allocated</div>
+  <h1>Experimental strategies: information diffusion &amp; market-consensus divergence</h1>
+  <p class="lede">A separate research track testing two different ideas, with its own capital, its own code, and zero influence on
+  the main momentum strategy's bots or decisions. Rule enforced here same as everywhere else in this build:
+  no capital moves until a strategy demonstrates real backtested edge.</p>
+</header>
+
+<section>
+  <div class="kpi-row">
+    {kpi("Status", ledger.get("status", "UNKNOWN"), "warning" if ledger.get("status")=="UNCOMMITTED" else "")}
+    {kpi("Capital", fmt_rs(ledger.get("cash", 20000)))}
+    {kpi("Diffusion mechanisms tested", "4")}
+    {kpi("Mechanisms with real edge", "0", "neg")}
+  </div>
+  <div class="callout" style="margin-top:12px;">
+    <b>Why capital is sitting in cash:</b> {ledger.get("reason", "")}
+  </div>
+</section>
+
+<section>
+  <h2>Idea 1: Information diffusion — four mechanisms tested, four failures</h2>
+  <p class="lede">Real academic grounding (Hong &amp; Stein 1999, Hou 2007): information reaches liquid/well-covered assets first
+  and diffuses to laggards with a lag. Tested four different versions of this on free NSE data. All four failed, and the pattern of
+  <em>why</em> is itself informative.</p>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>1. Within-sector liquidity-tier lead-lag {verdict_chip('FAILED')}</h3>
+    <p class="lede">Leader basket (top-half by dollar volume) vs laggard basket, within {sector_test.get('n_sectors_tested','-')} sectors, tested at lags 1-5 days.</p>
+    <div class="table-scroll"><table>
+      <thead><tr>{"".join(f'<th>lag {k}d</th>' for k in sector_test.get("lead_lag_by_day", {}))}</tr></thead>
+      <tbody><tr>{"".join(f'<td>{v["correlation"]}</td>' for v in sector_test.get("lead_lag_by_day", {}).values())}</tr></tbody>
+    </table></div>
+    <p class="lede" style="margin-top:8px;">Backtested trading rule at the strongest lag ({sector_test.get('best_lag','-')}d): CAGR {sector_test.get('backtest_metrics',{}).get('CAGR%','-')}%,
+    Sharpe {sector_test.get('backtest_metrics',{}).get('Sharpe','-')}, vs NIFTY buy-and-hold {research.get('nifty_bh_same_period',{}).get('CAGR%','-')}% over the same period.
+    Correlation too weak (max 0.03) to survive costs.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>2. US overnight index diffusion {verdict_chip('FAILED')}</h3>
+    <p class="lede">S&amp;P 500's daily return vs NIFTY's next-day move, decomposed into the overnight gap (not tradeable — GIFT Nifty
+    futures already price this in before NSE opens) and the intraday continuation (the only part actually tradeable).</p>
+    <div class="kpi-row">
+      {kpi("Overnight gap correlation", us_test.get("gap_correlation", "-"), "warning")}
+      {kpi("Tradeable intraday correlation", us_test.get("intraday_correlation", "-"), "neg")}
+    </div>
+    <p class="lede" style="margin-top:8px;">The information is real and strong (0.45 correlation) — it's just fully absorbed into the
+    opening price before any retail order could execute. Textbook market efficiency.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>3. Commodity-to-equity diffusion {verdict_chip('FAILED')}</h3>
+    <p class="lede">Crude oil (WTI) daily return vs commodity-exposed NSE stocks (OMCs, aviation, paints, metals) at multiple lags.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Stock</th><th>Exposure</th><th>lag 0</th><th>lag 1</th><th>lag 2</th><th>lag 3</th><th>lag 5</th></tr></thead>
+      <tbody>{commodity_rows}</tbody>
+    </table></div>
+    <p class="lede" style="margin-top:8px;">Correlations don't decay smoothly with lag the way real diffusion should — they jump around
+    in sign, the signature of noise and same-day common-factor co-movement (oil and metals often move together on shared global
+    risk sentiment), not one causing the other with a delay.</p>
+  </div>
+
+  <div class="card">
+    <h3>4. Dual-listed ADR diffusion {verdict_chip('FAILED')}</h3>
+    <p class="lede">US-listed ADR overnight move vs the same company's NSE stock next-day gap/intraday move, for 5 dual-listed companies.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>ADR &rarr; NSE stock</th><th>Gap correlation</th><th>Tradeable intraday correlation</th></tr></thead>
+      <tbody>{adr_rows}</tbody>
+    </table></div>
+    <p class="lede" style="margin-top:8px;">Same pattern as the index-level test, confirmed at individual-stock granularity across 5
+    separate companies — not a fluke of aggregation. Overnight information is absorbed into NSE's opening price with remarkable
+    consistency.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Idea 2: Analyst consensus divergence (observational only)</h2>
+  <div class="callout" style="background:var(--warning-bg);">
+    <b>This is NOT backtested and NEVER drives a trade.</b> Yahoo Finance only exposes today's analyst target price, not a
+    historical series — there's no way to test whether trading on this divergence would have worked historically. This section is a
+    live snapshot worth knowing about, not a validated signal. It replicates the <em>spirit</em> of Kalshi's mispricing-detection
+    methodology (comparing an independent aggregated view against your own model) since NSE has no free options data to derive a
+    true market-implied probability from, the way a Kalshi contract price gives one directly.
+  </div>
+  <div class="grid-2" style="margin-top:14px;">
+    <div class="card"><h3>Largest analyst-implied upside</h3>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Stock</th><th>Price</th><th>Target</th><th>Implied</th><th>Analysts</th><th>Rating</th></tr></thead>
+        <tbody>{consensus_rows(ranked[:10])}</tbody>
+      </table></div>
+    </div>
+    <div class="card"><h3>Largest analyst-implied downside</h3>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Stock</th><th>Price</th><th>Target</th><th>Implied</th><th>Analysts</th><th>Rating</th></tr></thead>
+        <tbody>{consensus_rows(list(reversed(ranked[-10:])))}</tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="callout info">
+    <b>Bottom line:</b> {research.get("conclusion", "")}
+  </div>
+</section>
+"""
+    write_page("teamb.html", page_shell("Team B Research", "teamb.html", body, research.get("generated_at", "")[:16].replace("T"," ")))
+
+
 def generate_backtest():
     summary_path = RESULTS / "single_asset_summary.csv"
     wide_summary = load_json("wide_summary.json", {})
@@ -999,6 +1143,7 @@ def main():
     generate_sentiment(bots)
     generate_montecarlo(ledger, bots)
     generate_backtest()
+    generate_teamb()
     print(f"Site generated in {DOCS}")
 
 

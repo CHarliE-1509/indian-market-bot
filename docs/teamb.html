@@ -1,0 +1,222 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team B Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  color-scheme: light;
+  --surface-1:   #fcfcfb; --page: #f9f9f7; --card: #ffffff;
+  --ink-1: #0b0b0b; --ink-2: #52514e; --ink-muted: #898781;
+  --grid: #e1e0d9; --baseline: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100; --series-5: #4a3aa7;
+  --good: #0ca30c; --warning: #b5790a; --critical: #d03b3b;
+  --good-bg: #eaf7ea; --warning-bg: #fbf1de; --critical-bg: #fbebea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-1: #1a1a19; --page: #0d0d0d; --card: #202020;
+    --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+    --grid: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --series-5: #9085e9;
+    --good: #0ca30c; --warning: #d99a1f; --critical: #e66767;
+    --good-bg: #10230f; --warning-bg: #2a2010; --critical-bg: #2a1412;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #1a1a19; --page: #0d0d0d; --card: #202020;
+  --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+  --grid: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --series-5: #9085e9;
+  --good: #0ca30c; --warning: #d99a1f; --critical: #e66767;
+  --good-bg: #10230f; --warning-bg: #2a2010; --critical-bg: #2a1412;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--page); }
+body {
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink-1); padding-bottom: 60px;
+}
+.num { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+a { color: var(--series-1); }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+
+nav.topnav {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+nav.topnav .wrap { display: flex; align-items: center; gap: 4px; padding: 12px 20px; flex-wrap: wrap; }
+nav.topnav .brand { font-weight: 700; margin-right: 16px; font-size: 14px; }
+nav.topnav a.navlink {
+  color: var(--ink-2); text-decoration: none; font-size: 13px; padding: 6px 12px;
+  border-radius: 6px; font-weight: 500;
+}
+nav.topnav a.navlink:hover { background: var(--grid); }
+nav.topnav a.navlink.active { background: var(--series-1); color: white; }
+.updated-badge { margin-left: auto; font-size: 11px; color: var(--ink-muted); }
+
+header.page-head { padding: 28px 0 8px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-muted); font-weight: 600; margin-bottom: 6px; }
+h1 { font-size: 24px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.01em; }
+p.lede { color: var(--ink-2); font-size: 14px; line-height: 1.6; max-width: 68ch; }
+
+section { margin: 28px 0; }
+h2 { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted);
+     font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.kpi .label { font-size: 11px; color: var(--ink-muted); margin-bottom: 5px; }
+.kpi .value { font-size: 19px; font-weight: 600; font-family: "IBM Plex Mono", monospace; }
+.kpi .value.pos { color: var(--good); } .kpi .value.neg { color: var(--critical); }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; color: inherit; }
+table, tbody, tr, th, td { color: inherit; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink-muted); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+td { font-family: "IBM Plex Mono", monospace; }
+td:first-child { font-family: "IBM Plex Sans", sans-serif; color: var(--ink-1); }
+.table-scroll { overflow-x: auto; }
+
+.chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10.5px; font-family: "IBM Plex Sans", sans-serif; font-weight: 600; }
+.chip.good { background: var(--good-bg); color: var(--good); }
+.chip.warning { background: var(--warning-bg); color: var(--warning); }
+.chip.critical { background: var(--critical-bg); color: var(--critical); }
+.chip.neutral { background: var(--grid); color: var(--ink-2); }
+
+.callout { background: var(--warning-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.6; }
+.callout.info { background: var(--card); border-left: 3px solid var(--series-1); }
+
+.headline-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.headline-item:last-child { border-bottom: none; }
+.headline-item .src { color: var(--ink-muted); font-size: 11px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+footer.site-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--ink-muted); }
+</style>
+
+<nav class="topnav"><div class="wrap">
+      <span class="brand">NSE Bot</span><a class="navlink" href="index.html">Overview</a><a class="navlink" href="manager.html">Manager</a><a class="navlink" href="quant.html">Quant</a><a class="navlink" href="technical.html">Technical</a><a class="navlink" href="sentiment.html">Sentiment</a><a class="navlink" href="montecarlo.html">Monte Carlo</a><a class="navlink" href="backtest.html">Backtest</a><a class="navlink active" href="teamb.html">Team B</a><span class="updated-badge">Updated 2026-09-30 02:16</span>
+    </div></nav>
+<div class="wrap">
+
+<header class="page-head">
+  <div class="eyebrow">Team B &middot; fully independent from the main strategy &middot; Rs 20,000 allocated</div>
+  <h1>Experimental strategies: information diffusion &amp; market-consensus divergence</h1>
+  <p class="lede">A separate research track testing two different ideas, with its own capital, its own code, and zero influence on
+  the main momentum strategy's bots or decisions. Rule enforced here same as everywhere else in this build:
+  no capital moves until a strategy demonstrates real backtested edge.</p>
+</header>
+
+<section>
+  <div class="kpi-row">
+    <div class="kpi"><div class="label">Status</div><div class="value warning">UNCOMMITTED</div></div>
+    <div class="kpi"><div class="label">Capital</div><div class="value ">₹20.0K</div></div>
+    <div class="kpi"><div class="label">Diffusion mechanisms tested</div><div class="value ">4</div></div>
+    <div class="kpi"><div class="label">Mechanisms with real edge</div><div class="value neg">0</div></div>
+  </div>
+  <div class="callout" style="margin-top:12px;">
+    <b>Why capital is sitting in cash:</b> No Team B strategy has demonstrated backtested edge yet — see research findings. Capital sits in cash until one does.
+  </div>
+</section>
+
+<section>
+  <h2>Idea 1: Information diffusion — four mechanisms tested, four failures</h2>
+  <p class="lede">Real academic grounding (Hong &amp; Stein 1999, Hou 2007): information reaches liquid/well-covered assets first
+  and diffuses to laggards with a lag. Tested four different versions of this on free NSE data. All four failed, and the pattern of
+  <em>why</em> is itself informative.</p>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>1. Within-sector liquidity-tier lead-lag <span class="chip critical">FAILED</span></h3>
+    <p class="lede">Leader basket (top-half by dollar volume) vs laggard basket, within 9 sectors, tested at lags 1-5 days.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>lag 1d</th><th>lag 2d</th><th>lag 3d</th><th>lag 4d</th><th>lag 5d</th></tr></thead>
+      <tbody><tr><td>-0.0078</td><td>0.0264</td><td>0.0147</td><td>0.0258</td><td>0.0312</td></tr></tbody>
+    </table></div>
+    <p class="lede" style="margin-top:8px;">Backtested trading rule at the strongest lag (5d): CAGR -0.02%,
+    Sharpe 0.04, vs NIFTY buy-and-hold 9.48% over the same period.
+    Correlation too weak (max 0.03) to survive costs.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>2. US overnight index diffusion <span class="chip critical">FAILED</span></h3>
+    <p class="lede">S&amp;P 500's daily return vs NIFTY's next-day move, decomposed into the overnight gap (not tradeable — GIFT Nifty
+    futures already price this in before NSE opens) and the intraday continuation (the only part actually tradeable).</p>
+    <div class="kpi-row">
+      <div class="kpi"><div class="label">Overnight gap correlation</div><div class="value warning">0.4541</div></div>
+      <div class="kpi"><div class="label">Tradeable intraday correlation</div><div class="value neg">-0.048</div></div>
+    </div>
+    <p class="lede" style="margin-top:8px;">The information is real and strong (0.45 correlation) — it's just fully absorbed into the
+    opening price before any retail order could execute. Textbook market efficiency.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>3. Commodity-to-equity diffusion <span class="chip critical">FAILED</span></h3>
+    <p class="lede">Crude oil (WTI) daily return vs commodity-exposed NSE stocks (OMCs, aviation, paints, metals) at multiple lags.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Stock</th><th>Exposure</th><th>lag 0</th><th>lag 1</th><th>lag 2</th><th>lag 3</th><th>lag 5</th></tr></thead>
+      <tbody><tr><td>BPCL</td><td>OMC — refining/marketing margin exposure</td><td>-0.0251</td><td>0.0256</td><td>-0.018</td><td>0.0172</td><td>-0.0072</td></tr><tr><td>IOC</td><td>OMC — refining/marketing margin exposure</td><td>-0.002</td><td>0.0486</td><td>-0.0159</td><td>0.0103</td><td>0.0306</td></tr><tr><td>INDIGO</td><td>Aviation — fuel cost exposure</td><td>0.0228</td><td>-0.0133</td><td>0.0502</td><td>0.0609</td><td>0.0157</td></tr><tr><td>ASIANPAINT</td><td>Paints — petrochemical input cost</td><td>0.0</td><td>-0.0416</td><td>-0.0978</td><td>0.0129</td><td>-0.0031</td></tr><tr><td>JSWSTEEL</td><td>Metals — commodity complex correlation</td><td>0.1099</td><td>0.0656</td><td>-0.0299</td><td>0.0423</td><td>-0.0033</td></tr><tr><td>TATASTEEL</td><td>Metals — commodity complex correlation</td><td>0.082</td><td>0.0965</td><td>-0.0212</td><td>0.0057</td><td>-0.0055</td></tr></tbody>
+    </table></div>
+    <p class="lede" style="margin-top:8px;">Correlations don't decay smoothly with lag the way real diffusion should — they jump around
+    in sign, the signature of noise and same-day common-factor co-movement (oil and metals often move together on shared global
+    risk sentiment), not one causing the other with a delay.</p>
+  </div>
+
+  <div class="card">
+    <h3>4. Dual-listed ADR diffusion <span class="chip critical">FAILED</span></h3>
+    <p class="lede">US-listed ADR overnight move vs the same company's NSE stock next-day gap/intraday move, for 5 dual-listed companies.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>ADR &rarr; NSE stock</th><th>Gap correlation</th><th>Tradeable intraday correlation</th></tr></thead>
+      <tbody><tr><td>INFY->INFY.NS</td><td>0.5855</td><td>0.0323</td></tr><tr><td>IBN->ICICIBANK.NS</td><td>0.3586</td><td>-0.0619</td></tr><tr><td>HDB->HDFCBANK.NS</td><td>0.3827</td><td>-0.0167</td></tr><tr><td>WIT->WIPRO.NS</td><td>0.4368</td><td>0.0271</td></tr><tr><td>RDY->DRREDDY.NS</td><td>0.2788</td><td>0.0337</td></tr></tbody>
+    </table></div>
+    <p class="lede" style="margin-top:8px;">Same pattern as the index-level test, confirmed at individual-stock granularity across 5
+    separate companies — not a fluke of aggregation. Overnight information is absorbed into NSE's opening price with remarkable
+    consistency.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Idea 2: Analyst consensus divergence (observational only)</h2>
+  <div class="callout" style="background:var(--warning-bg);">
+    <b>This is NOT backtested and NEVER drives a trade.</b> Yahoo Finance only exposes today's analyst target price, not a
+    historical series — there's no way to test whether trading on this divergence would have worked historically. This section is a
+    live snapshot worth knowing about, not a validated signal. It replicates the <em>spirit</em> of Kalshi's mispricing-detection
+    methodology (comparing an independent aggregated view against your own model) since NSE has no free options data to derive a
+    true market-implied probability from, the way a Kalshi contract price gives one directly.
+  </div>
+  <div class="grid-2" style="margin-top:14px;">
+    <div class="card"><h3>Largest analyst-implied upside</h3>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Stock</th><th>Price</th><th>Target</th><th>Implied</th><th>Analysts</th><th>Rating</th></tr></thead>
+        <tbody><tr><td>CROMPTON</td><td>₹211.37</td><td>₹336</td><td>+59.1%</td><td>33</td><td>none</td></tr><tr><td>ICICIPRULI</td><td>₹444.55</td><td>₹673</td><td>+51.5%</td><td>33</td><td>strong_buy</td></tr><tr><td>GODREJPROP</td><td>₹1634.4</td><td>₹2337</td><td>+43.0%</td><td>22</td><td>buy</td></tr><tr><td>HDFCLIFE</td><td>₹523.55</td><td>₹745</td><td>+42.3%</td><td>33</td><td>strong_buy</td></tr><tr><td>RELIANCE</td><td>₹1182.0</td><td>₹1677</td><td>+41.9%</td><td>26</td><td>strong_buy</td></tr><tr><td>M&M</td><td>₹2947.8</td><td>₹4174</td><td>+41.6%</td><td>34</td><td>strong_buy</td></tr><tr><td>TATACONSUM</td><td>₹967.7</td><td>₹1343</td><td>+38.8%</td><td>26</td><td>none</td></tr><tr><td>HDFCAMC</td><td>₹2223.3</td><td>₹3085</td><td>+38.8%</td><td>27</td><td>strong_buy</td></tr><tr><td>GODREJCP</td><td>₹855.0</td><td>₹1179</td><td>+37.9%</td><td>34</td><td>buy</td></tr><tr><td>HDFCBANK</td><td>₹722.7</td><td>₹994</td><td>+37.6%</td><td>41</td><td>strong_buy</td></tr></tbody>
+      </table></div>
+    </div>
+    <div class="card"><h3>Largest analyst-implied downside</h3>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Stock</th><th>Price</th><th>Target</th><th>Implied</th><th>Analysts</th><th>Rating</th></tr></thead>
+        <tbody><tr><td>DIVISLAB</td><td>₹9431.0</td><td>₹8447</td><td>-10.4%</td><td>29</td><td>hold</td></tr><tr><td>DRREDDY</td><td>₹1251.9</td><td>₹1275</td><td>+1.9%</td><td>38</td><td>hold</td></tr><tr><td>TVSMOTOR</td><td>₹4091.1</td><td>₹4217</td><td>+3.1%</td><td>37</td><td>buy</td></tr><tr><td>HCLTECH</td><td>₹1222.0</td><td>₹1262</td><td>+3.3%</td><td>39</td><td>hold</td></tr><tr><td>ABB</td><td>₹6660.5</td><td>₹7042</td><td>+5.7%</td><td>28</td><td>none</td></tr><tr><td>SIEMENS</td><td>₹3710.0</td><td>₹3971</td><td>+7.0%</td><td>27</td><td>hold</td></tr><tr><td>BAJAJ-AUTO</td><td>₹10811.0</td><td>₹11631</td><td>+7.6%</td><td>40</td><td>buy</td></tr><tr><td>TECHM</td><td>₹1510.5</td><td>₹1627</td><td>+7.7%</td><td>39</td><td>buy</td></tr><tr><td>JINDALSTEL</td><td>₹1130.0</td><td>₹1222</td><td>+8.2%</td><td>32</td><td>none</td></tr><tr><td>MOTHERSON</td><td>₹158.56</td><td>₹172</td><td>+8.4%</td><td>22</td><td>none</td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="callout info">
+    <b>Bottom line:</b> All four tested information-diffusion mechanisms failed to show retail-exploitable edge on free daily NSE data — either negligible/noisy correlation, or (for the two cross-market tests) a real correlation that is fully absorbed into NSE's opening price before market open. Analyst consensus divergence cannot be backtested (no historical target-price data available for free) and remains observational only. No Team B strategy currently has demonstrated edge; capital stays uncommitted.
+  </div>
+</section>
+
+<footer class="site-footer">
+  Paper-trading bot &mdash; not investment advice. Backtested and live-run on NSE data; see the Backtest page for methodology and honest limitations.
+</footer>
+</div>

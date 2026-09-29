@@ -1,0 +1,918 @@
+{
+  "generated_at": "2026-09-30T02:16:41.118625",
+  "nifty_bh_same_period": {
+    "CAGR%": 9.48,
+    "MaxDD%": -38.44,
+    "Sharpe": 0.62
+  },
+  "diffusion_tests": {
+    "sector_liquidity_tier": {
+      "mechanism": "Within-sector liquidity-tier (leader/laggard by dollar volume) lead-lag",
+      "n_sectors_tested": 9,
+      "lead_lag_by_day": {
+        "1": {
+          "correlation": -0.0078,
+          "n_obs": 17793
+        },
+        "2": {
+          "correlation": 0.0264,
+          "n_obs": 17784
+        },
+        "3": {
+          "correlation": 0.0147,
+          "n_obs": 17775
+        },
+        "4": {
+          "correlation": 0.0258,
+          "n_obs": 17766
+        },
+        "5": {
+          "correlation": 0.0312,
+          "n_obs": 17757
+        }
+      },
+      "best_lag": 5,
+      "backtest_metrics": {
+        "CAGR%": -0.02,
+        "MaxDD%": -17.3,
+        "Sharpe": 0.04,
+        "Trades": 0,
+        "WinRate%": 0,
+        "FinalValue": 499335.0
+      },
+      "verdict": "FAILED \u2014 negligible correlation (~0.03), backtest shows no edge vs NIFTY buy-and-hold."
+    },
+    "us_overnight_index": {
+      "mechanism": "US S&P500 overnight move -> NIFTY next-day open/close",
+      "n_obs": 1907,
+      "gap_correlation": 0.4541,
+      "intraday_correlation": -0.048,
+      "verdict": "FAILED \u2014 information fully absorbed into NSE's opening price before market open (GIFT Nifty arbitrage); nothing left to trade once the market opens."
+    },
+    "commodity_to_equity": {
+      "mechanism": "Crude oil (WTI) -> commodity-exposed NSE stocks",
+      "results_by_ticker": {
+        "BPCL.NS": {
+          "note": "OMC \u2014 refining/marketing margin exposure",
+          "correlation_by_lag": {
+            "0": -0.0251,
+            "1": 0.0256,
+            "2": -0.018,
+            "3": 0.0172,
+            "5": -0.0072
+          }
+        },
+        "IOC.NS": {
+          "note": "OMC \u2014 refining/marketing margin exposure",
+          "correlation_by_lag": {
+            "0": -0.002,
+            "1": 0.0486,
+            "2": -0.0159,
+            "3": 0.0103,
+            "5": 0.0306
+          }
+        },
+        "INDIGO.NS": {
+          "note": "Aviation \u2014 fuel cost exposure",
+          "correlation_by_lag": {
+            "0": 0.0228,
+            "1": -0.0133,
+            "2": 0.0502,
+            "3": 0.0609,
+            "5": 0.0157
+          }
+        },
+        "ASIANPAINT.NS": {
+          "note": "Paints \u2014 petrochemical input cost",
+          "correlation_by_lag": {
+            "0": 0.0,
+            "1": -0.0416,
+            "2": -0.0978,
+            "3": 0.0129,
+            "5": -0.0031
+          }
+        },
+        "JSWSTEEL.NS": {
+          "note": "Metals \u2014 commodity complex correlation",
+          "correlation_by_lag": {
+            "0": 0.1099,
+            "1": 0.0656,
+            "2": -0.0299,
+            "3": 0.0423,
+            "5": -0.0033
+          }
+        },
+        "TATASTEEL.NS": {
+          "note": "Metals \u2014 commodity complex correlation",
+          "correlation_by_lag": {
+            "0": 0.082,
+            "1": 0.0965,
+            "2": -0.0212,
+            "3": 0.0057,
+            "5": -0.0055
+          }
+        }
+      },
+      "verdict": "FAILED \u2014 correlations weak (0.02-0.11) and don't decay smoothly with lag; looks like contemporaneous common-factor noise, not diffusion."
+    },
+    "adr_to_nse": {
+      "mechanism": "US-listed ADR overnight move -> same company's NSE stock next day",
+      "results_by_pair": {
+        "INFY->INFY.NS": {
+          "n_obs": 1912,
+          "gap_correlation": 0.5855,
+          "intraday_correlation": 0.0323
+        },
+        "IBN->ICICIBANK.NS": {
+          "n_obs": 1912,
+          "gap_correlation": 0.3586,
+          "intraday_correlation": -0.0619
+        },
+        "HDB->HDFCBANK.NS": {
+          "n_obs": 1912,
+          "gap_correlation": 0.3827,
+          "intraday_correlation": -0.0167
+        },
+        "WIT->WIPRO.NS": {
+          "n_obs": 1912,
+          "gap_correlation": 0.4368,
+          "intraday_correlation": 0.0271
+        },
+        "RDY->DRREDDY.NS": {
+          "n_obs": 1912,
+          "gap_correlation": 0.2788,
+          "intraday_correlation": 0.0337
+        }
+      },
+      "verdict": "FAILED \u2014 confirms the index-level finding at individual-stock granularity: overnight information is fully absorbed into NSE's opening price, nothing tradeable left intraday."
+    }
+  },
+  "analyst_consensus": {
+    "RELIANCE.NS": {
+      "current_price": 1182.0,
+      "target_mean_price": 1676.8462,
+      "target_high": 1890.0,
+      "target_low": 1350.0,
+      "implied_return_pct": 41.87,
+      "n_analysts": 26,
+      "recommendation": "strong_buy"
+    },
+    "TCS.NS": {
+      "current_price": 2032.4,
+      "target_mean_price": 2470.7073,
+      "target_high": 3480.0,
+      "target_low": 1800.0,
+      "implied_return_pct": 21.57,
+      "n_analysts": 41,
+      "recommendation": "buy"
+    },
+    "HDFCBANK.NS": {
+      "current_price": 722.7,
+      "target_mean_price": 994.4878,
+      "target_high": 1400.0,
+      "target_low": 800.0,
+      "implied_return_pct": 37.61,
+      "n_analysts": 41,
+      "recommendation": "strong_buy"
+    },
+    "ICICIBANK.NS": {
+      "current_price": 1292.2,
+      "target_mean_price": 1746.7382,
+      "target_high": 2000.0,
+      "target_low": 1592.0,
+      "implied_return_pct": 35.18,
+      "n_analysts": 42,
+      "recommendation": "strong_buy"
+    },
+    "INFY.NS": {
+      "current_price": 1015.4,
+      "target_mean_price": 1202.2618,
+      "target_high": 1610.0,
+      "target_low": 940.0,
+      "implied_return_pct": 18.4,
+      "n_analysts": 42,
+      "recommendation": "buy"
+    },
+    "HINDUNILVR.NS": {
+      "current_price": 1863.8,
+      "target_mean_price": 2417.842,
+      "target_high": 2860.0,
+      "target_low": 1804.0,
+      "implied_return_pct": 29.73,
+      "n_analysts": 38,
+      "recommendation": "buy"
+    },
+    "ITC.NS": {
+      "current_price": 265.1,
+      "target_mean_price": 327.0,
+      "target_high": 440.0,
+      "target_low": 270.0,
+      "implied_return_pct": 23.35,
+      "n_analysts": 33,
+      "recommendation": "buy"
+    },
+    "SBIN.NS": {
+      "current_price": 964.7,
+      "target_mean_price": 1263.1025,
+      "target_high": 1390.0,
+      "target_low": 1120.0,
+      "implied_return_pct": 30.93,
+      "n_analysts": 39,
+      "recommendation": "strong_buy"
+    },
+    "BHARTIARTL.NS": {
+      "current_price": 1771.2,
+      "target_mean_price": 2319.8823,
+      "target_high": 2750.0,
+      "target_low": 1800.0,
+      "implied_return_pct": 30.98,
+      "n_analysts": 34,
+      "recommendation": "strong_buy"
+    },
+    "KOTAKBANK.NS": {
+      "current_price": 406.0,
+      "target_mean_price": 465.81082,
+      "target_high": 535.0,
+      "target_low": 380.0,
+      "implied_return_pct": 14.73,
+      "n_analysts": 37,
+      "recommendation": "buy"
+    },
+    "LT.NS": {
+      "current_price": 3749.1,
+      "target_mean_price": 4499.517,
+      "target_high": 5060.0,
+      "target_low": 3550.0,
+      "implied_return_pct": 20.02,
+      "n_analysts": 29,
+      "recommendation": "buy"
+    },
+    "AXISBANK.NS": {
+      "current_price": 1212.1,
+      "target_mean_price": 1585.9512,
+      "target_high": 1780.0,
+      "target_low": 1430.0,
+      "implied_return_pct": 30.84,
+      "n_analysts": 41,
+      "recommendation": "strong_buy"
+    },
+    "BAJFINANCE.NS": {
+      "current_price": 973.8,
+      "target_mean_price": 1165.0,
+      "target_high": 1320.0,
+      "target_low": 815.0,
+      "implied_return_pct": 19.63,
+      "n_analysts": 35,
+      "recommendation": "buy"
+    },
+    "MARUTI.NS": {
+      "current_price": 11877.0,
+      "target_mean_price": 15933.154,
+      "target_high": 17775.0,
+      "target_low": 12850.0,
+      "implied_return_pct": 34.15,
+      "n_analysts": 39,
+      "recommendation": "buy"
+    },
+    "SUNPHARMA.NS": {
+      "current_price": 1865.0,
+      "target_mean_price": 2175.5938,
+      "target_high": 2400.0,
+      "target_low": 1830.0,
+      "implied_return_pct": 16.65,
+      "n_analysts": 32,
+      "recommendation": "buy"
+    },
+    "TITAN.NS": {
+      "current_price": 4675.0,
+      "target_mean_price": 5421.5,
+      "target_high": 6000.0,
+      "target_low": 4350.0,
+      "implied_return_pct": 15.97,
+      "n_analysts": 36,
+      "recommendation": "buy"
+    },
+    "ULTRACEMCO.NS": {
+      "current_price": 10829.0,
+      "target_mean_price": 13928.378,
+      "target_high": 15500.0,
+      "target_low": 8900.0,
+      "implied_return_pct": 28.62,
+      "n_analysts": 37,
+      "recommendation": "strong_buy"
+    },
+    "NESTLEIND.NS": {
+      "current_price": 1345.7,
+      "target_mean_price": 1592.1111,
+      "target_high": 1815.0,
+      "target_low": 1350.0,
+      "implied_return_pct": 18.31,
+      "n_analysts": 36,
+      "recommendation": "buy"
+    },
+    "WIPRO.NS": {
+      "current_price": 156.79,
+      "target_mean_price": 177.45,
+      "target_high": 226.0,
+      "target_low": 140.0,
+      "implied_return_pct": 13.18,
+      "n_analysts": 40,
+      "recommendation": "hold"
+    },
+    "HCLTECH.NS": {
+      "current_price": 1222.0,
+      "target_mean_price": 1262.2821,
+      "target_high": 1548.0,
+      "target_low": 1030.0,
+      "implied_return_pct": 3.3,
+      "n_analysts": 39,
+      "recommendation": "hold"
+    },
+    "TECHM.NS": {
+      "current_price": 1510.5,
+      "target_mean_price": 1626.8975,
+      "target_high": 1951.0,
+      "target_low": 1080.0,
+      "implied_return_pct": 7.71,
+      "n_analysts": 39,
+      "recommendation": "buy"
+    },
+    "ASIANPAINT.NS": {
+      "current_price": 2415.0,
+      "target_mean_price": 3021.4412,
+      "target_high": 3827.0,
+      "target_low": 1860.0,
+      "implied_return_pct": 25.11,
+      "n_analysts": 34,
+      "recommendation": "none"
+    },
+    "BRITANNIA.NS": {
+      "current_price": 4835.0,
+      "target_mean_price": 6318.121,
+      "target_high": 7260.0,
+      "target_low": 5000.0,
+      "implied_return_pct": 30.67,
+      "n_analysts": 33,
+      "recommendation": "buy"
+    },
+    "DABUR.NS": {
+      "current_price": 380.4,
+      "target_mean_price": 501.21622,
+      "target_high": 625.0,
+      "target_low": 379.0,
+      "implied_return_pct": 31.76,
+      "n_analysts": 37,
+      "recommendation": "buy"
+    },
+    "GODREJCP.NS": {
+      "current_price": 855.0,
+      "target_mean_price": 1179.3529,
+      "target_high": 1485.0,
+      "target_low": 743.0,
+      "implied_return_pct": 37.94,
+      "n_analysts": 34,
+      "recommendation": "buy"
+    },
+    "MARICO.NS": {
+      "current_price": 787.15,
+      "target_mean_price": 962.6667,
+      "target_high": 1050.0,
+      "target_low": 703.0,
+      "implied_return_pct": 22.3,
+      "n_analysts": 39,
+      "recommendation": "buy"
+    },
+    "COLPAL.NS": {
+      "current_price": 1785.1,
+      "target_mean_price": 2229.4614,
+      "target_high": 2750.0,
+      "target_low": 1976.0,
+      "implied_return_pct": 24.89,
+      "n_analysts": 26,
+      "recommendation": "hold"
+    },
+    "TATACONSUM.NS": {
+      "current_price": 967.7,
+      "target_mean_price": 1343.0,
+      "target_high": 1500.0,
+      "target_low": 1124.0,
+      "implied_return_pct": 38.78,
+      "n_analysts": 26,
+      "recommendation": "none"
+    },
+    "TRENT.NS": {
+      "current_price": 2635.0,
+      "target_mean_price": 3406.487,
+      "target_high": 4455.0,
+      "target_low": 2950.0,
+      "implied_return_pct": 29.28,
+      "n_analysts": 26,
+      "recommendation": "buy"
+    },
+    "DMART.NS": {
+      "current_price": 3750.0,
+      "target_mean_price": 4228.0312,
+      "target_high": 5723.0,
+      "target_low": 3250.0,
+      "implied_return_pct": 12.75,
+      "n_analysts": 32,
+      "recommendation": "hold"
+    },
+    "ADANIPORTS.NS": {
+      "current_price": 1822.0,
+      "target_mean_price": 2047.0834,
+      "target_high": 2200.0,
+      "target_low": 1766.0,
+      "implied_return_pct": 12.35,
+      "n_analysts": 24,
+      "recommendation": "strong_buy"
+    },
+    "POWERGRID.NS": {
+      "current_price": 261.5,
+      "target_mean_price": 320.56,
+      "target_high": 400.0,
+      "target_low": 270.0,
+      "implied_return_pct": 22.59,
+      "n_analysts": 25,
+      "recommendation": "buy"
+    },
+    "NTPC.NS": {
+      "current_price": 323.5,
+      "target_mean_price": 429.57144,
+      "target_high": 485.0,
+      "target_low": 355.0,
+      "implied_return_pct": 32.79,
+      "n_analysts": 28,
+      "recommendation": "strong_buy"
+    },
+    "TATAPOWER.NS": {
+      "current_price": 359.0,
+      "target_mean_price": 413.63632,
+      "target_high": 525.0,
+      "target_low": 299.99875,
+      "implied_return_pct": 15.22,
+      "n_analysts": 22,
+      "recommendation": "buy"
+    },
+    "ONGC.NS": {
+      "current_price": 230.0,
+      "target_mean_price": 294.53333,
+      "target_high": 405.0,
+      "target_low": 210.0,
+      "implied_return_pct": 28.06,
+      "n_analysts": 30,
+      "recommendation": "buy"
+    },
+    "BPCL.NS": {
+      "current_price": 299.35,
+      "target_mean_price": 345.32257,
+      "target_high": 490.0,
+      "target_low": 249.0,
+      "implied_return_pct": 15.36,
+      "n_analysts": 31,
+      "recommendation": "hold"
+    },
+    "IOC.NS": {
+      "current_price": 131.33,
+      "target_mean_price": 160.16129,
+      "target_high": 230.0,
+      "target_low": 105.0,
+      "implied_return_pct": 21.95,
+      "n_analysts": 31,
+      "recommendation": "buy"
+    },
+    "COALINDIA.NS": {
+      "current_price": 425.0,
+      "target_mean_price": 468.91666,
+      "target_high": 550.0,
+      "target_low": 370.0,
+      "implied_return_pct": 10.33,
+      "n_analysts": 24,
+      "recommendation": "buy"
+    },
+    "GAIL.NS": {
+      "current_price": 170.04,
+      "target_mean_price": 194.90323,
+      "target_high": 215.0,
+      "target_low": 158.0,
+      "implied_return_pct": 14.62,
+      "n_analysts": 31,
+      "recommendation": "buy"
+    },
+    "PETRONET.NS": {
+      "current_price": 282.95,
+      "target_mean_price": 318.2258,
+      "target_high": 412.0,
+      "target_low": 240.0,
+      "implied_return_pct": 12.47,
+      "n_analysts": 31,
+      "recommendation": "buy"
+    },
+    "HDFCLIFE.NS": {
+      "current_price": 523.55,
+      "target_mean_price": 745.24243,
+      "target_high": 910.0,
+      "target_low": 620.0,
+      "implied_return_pct": 42.34,
+      "n_analysts": 33,
+      "recommendation": "strong_buy"
+    },
+    "SBILIFE.NS": {
+      "current_price": 1735.0,
+      "target_mean_price": 2340.4722,
+      "target_high": 2790.0,
+      "target_low": 1050.0,
+      "implied_return_pct": 34.9,
+      "n_analysts": 36,
+      "recommendation": "strong_buy"
+    },
+    "ICICIPRULI.NS": {
+      "current_price": 444.55,
+      "target_mean_price": 673.30304,
+      "target_high": 790.0,
+      "target_low": 570.0,
+      "implied_return_pct": 51.46,
+      "n_analysts": 33,
+      "recommendation": "strong_buy"
+    },
+    "ICICIGI.NS": {
+      "current_price": 1515.0,
+      "target_mean_price": 1919.7916,
+      "target_high": 2430.0,
+      "target_low": 1328.0,
+      "implied_return_pct": 26.72,
+      "n_analysts": 24,
+      "recommendation": "buy"
+    },
+    "BAJAJFINSV.NS": {
+      "current_price": 1742.4,
+      "target_mean_price": 2367.0,
+      "target_high": 2640.0,
+      "target_low": 1710.0,
+      "implied_return_pct": 35.85,
+      "n_analysts": 13,
+      "recommendation": "none"
+    },
+    "BAJAJ-AUTO.NS": {
+      "current_price": 10811.0,
+      "target_mean_price": 11631.125,
+      "target_high": 13700.0,
+      "target_low": 9259.0,
+      "implied_return_pct": 7.59,
+      "n_analysts": 40,
+      "recommendation": "buy"
+    },
+    "HDFCAMC.NS": {
+      "current_price": 2223.3,
+      "target_mean_price": 3084.7407,
+      "target_high": 3340.0,
+      "target_low": 2590.0,
+      "implied_return_pct": 38.75,
+      "n_analysts": 27,
+      "recommendation": "strong_buy"
+    },
+    "INDUSINDBK.NS": {
+      "current_price": 878.0,
+      "target_mean_price": 989.6111,
+      "target_high": 1250.0,
+      "target_low": 625.0,
+      "implied_return_pct": 12.71,
+      "n_analysts": 36,
+      "recommendation": "hold"
+    },
+    "BANKBARODA.NS": {
+      "current_price": 227.68,
+      "target_mean_price": 289.82352,
+      "target_high": 350.0,
+      "target_low": 225.0,
+      "implied_return_pct": 27.29,
+      "n_analysts": 34,
+      "recommendation": "buy"
+    },
+    "FEDERALBNK.NS": {
+      "current_price": 320.2,
+      "target_mean_price": 365.6857,
+      "target_high": 425.0,
+      "target_low": 284.0,
+      "implied_return_pct": 14.21,
+      "n_analysts": 35,
+      "recommendation": "buy"
+    },
+    "AUBANK.NS": {
+      "current_price": 1005.2,
+      "target_mean_price": 1121.1034,
+      "target_high": 1285.0,
+      "target_low": 800.0,
+      "implied_return_pct": 11.53,
+      "n_analysts": 29,
+      "recommendation": "buy"
+    },
+    "DRREDDY.NS": {
+      "current_price": 1251.9,
+      "target_mean_price": 1275.2666,
+      "target_high": 1740.0,
+      "target_low": 1039.0,
+      "implied_return_pct": 1.87,
+      "n_analysts": 38,
+      "recommendation": "hold"
+    },
+    "CIPLA.NS": {
+      "current_price": 1379.3,
+      "target_mean_price": 1509.0834,
+      "target_high": 1768.0,
+      "target_low": 1170.0,
+      "implied_return_pct": 9.41,
+      "n_analysts": 36,
+      "recommendation": "buy"
+    },
+    "DIVISLAB.NS": {
+      "current_price": 9431.0,
+      "target_mean_price": 8447.0,
+      "target_high": 11700.0,
+      "target_low": 6000.0,
+      "implied_return_pct": -10.43,
+      "n_analysts": 29,
+      "recommendation": "hold"
+    },
+    "APOLLOHOSP.NS": {
+      "current_price": 8659.0,
+      "target_mean_price": 9821.0,
+      "target_high": 10800.0,
+      "target_low": 6230.0,
+      "implied_return_pct": 13.42,
+      "n_analysts": 30,
+      "recommendation": "strong_buy"
+    },
+    "LUPIN.NS": {
+      "current_price": 2052.1,
+      "target_mean_price": 2477.111,
+      "target_high": 3095.0,
+      "target_low": 1800.0,
+      "implied_return_pct": 20.71,
+      "n_analysts": 36,
+      "recommendation": "hold"
+    },
+    "HEROMOTOCO.NS": {
+      "current_price": 5208.0,
+      "target_mean_price": 6262.5713,
+      "target_high": 7760.0,
+      "target_low": 4820.0,
+      "implied_return_pct": 20.25,
+      "n_analysts": 35,
+      "recommendation": "buy"
+    },
+    "EICHERMOT.NS": {
+      "current_price": 7179.0,
+      "target_mean_price": 8350.917,
+      "target_high": 9665.0,
+      "target_low": 6900.0,
+      "implied_return_pct": 16.32,
+      "n_analysts": 36,
+      "recommendation": "buy"
+    },
+    "M&M.NS": {
+      "current_price": 2947.8,
+      "target_mean_price": 4173.5884,
+      "target_high": 4875.0,
+      "target_low": 3508.0,
+      "implied_return_pct": 41.58,
+      "n_analysts": 34,
+      "recommendation": "strong_buy"
+    },
+    "TVSMOTOR.NS": {
+      "current_price": 4091.1,
+      "target_mean_price": 4217.081,
+      "target_high": 5425.0,
+      "target_low": 2470.0,
+      "implied_return_pct": 3.08,
+      "n_analysts": 37,
+      "recommendation": "buy"
+    },
+    "ASHOKLEY.NS": {
+      "current_price": 153.44,
+      "target_mean_price": 189.69698,
+      "target_high": 240.0,
+      "target_low": 155.0,
+      "implied_return_pct": 23.63,
+      "n_analysts": 33,
+      "recommendation": "buy"
+    },
+    "BOSCHLTD.NS": {
+      "current_price": 45700.0,
+      "target_mean_price": 51439.0,
+      "target_high": 57500.0,
+      "target_low": 43728.0,
+      "implied_return_pct": 12.56,
+      "n_analysts": 5,
+      "recommendation": "strong_buy"
+    },
+    "MOTHERSON.NS": {
+      "current_price": 158.56,
+      "target_mean_price": 171.90909,
+      "target_high": 195.0,
+      "target_low": 115.0,
+      "implied_return_pct": 8.42,
+      "n_analysts": 22,
+      "recommendation": "none"
+    },
+    "BALKRISIND.NS": {
+      "current_price": 2126.2,
+      "target_mean_price": 2408.8948,
+      "target_high": 3028.0,
+      "target_low": 1981.0,
+      "implied_return_pct": 13.3,
+      "n_analysts": 19,
+      "recommendation": "none"
+    },
+    "JSWSTEEL.NS": {
+      "current_price": 1272.4,
+      "target_mean_price": 1379.8286,
+      "target_high": 1650.0,
+      "target_low": 1100.0,
+      "implied_return_pct": 8.44,
+      "n_analysts": 35,
+      "recommendation": "none"
+    },
+    "TATASTEEL.NS": {
+      "current_price": 188.0,
+      "target_mean_price": 218.08571,
+      "target_high": 260.0,
+      "target_low": 175.0,
+      "implied_return_pct": 16.0,
+      "n_analysts": 35,
+      "recommendation": "buy"
+    },
+    "HINDALCO.NS": {
+      "current_price": 955.2,
+      "target_mean_price": 1161.5518,
+      "target_high": 1430.0,
+      "target_low": 925.0,
+      "implied_return_pct": 21.6,
+      "n_analysts": 29,
+      "recommendation": "buy"
+    },
+    "JINDALSTEL.NS": {
+      "current_price": 1130.0,
+      "target_mean_price": 1222.2188,
+      "target_high": 1410.0,
+      "target_low": 590.0,
+      "implied_return_pct": 8.16,
+      "n_analysts": 32,
+      "recommendation": "none"
+    },
+    "GRASIM.NS": {
+      "current_price": 3100.0,
+      "target_mean_price": 3837.5,
+      "target_high": 4175.0,
+      "target_low": 3500.0,
+      "implied_return_pct": 23.79,
+      "n_analysts": 10,
+      "recommendation": "strong_buy"
+    },
+    "SHREECEM.NS": {
+      "current_price": 21900.0,
+      "target_mean_price": 27841.676,
+      "target_high": 31600.0,
+      "target_low": 20100.0,
+      "implied_return_pct": 27.13,
+      "n_analysts": 37,
+      "recommendation": "buy"
+    },
+    "AMBUJACEM.NS": {
+      "current_price": 365.75,
+      "target_mean_price": 489.92105,
+      "target_high": 639.0,
+      "target_low": 350.0,
+      "implied_return_pct": 33.95,
+      "n_analysts": 38,
+      "recommendation": "none"
+    },
+    "ACC.NS": {
+      "current_price": 1202.6,
+      "target_mean_price": 1518.4584,
+      "target_high": 2198.0,
+      "target_low": 1150.0,
+      "implied_return_pct": 26.26,
+      "n_analysts": 24,
+      "recommendation": "none"
+    },
+    "DLF.NS": {
+      "current_price": 653.0,
+      "target_mean_price": 815.9545,
+      "target_high": 1000.0,
+      "target_low": 676.0,
+      "implied_return_pct": 24.95,
+      "n_analysts": 22,
+      "recommendation": "none"
+    },
+    "GODREJPROP.NS": {
+      "current_price": 1634.4,
+      "target_mean_price": 2336.682,
+      "target_high": 3000.0,
+      "target_low": 1525.0,
+      "implied_return_pct": 42.97,
+      "n_analysts": 22,
+      "recommendation": "buy"
+    },
+    "OBEROIRLTY.NS": {
+      "current_price": 1762.9,
+      "target_mean_price": 2067.3462,
+      "target_high": 2490.0,
+      "target_low": 1240.0,
+      "implied_return_pct": 17.27,
+      "n_analysts": 26,
+      "recommendation": "buy"
+    },
+    "UPL.NS": {
+      "current_price": 538.0,
+      "target_mean_price": 731.2353,
+      "target_high": 880.0,
+      "target_low": 600.0,
+      "implied_return_pct": 35.92,
+      "n_analysts": 17,
+      "recommendation": "buy"
+    },
+    "SRF.NS": {
+      "current_price": 2420.1,
+      "target_mean_price": 2917.6897,
+      "target_high": 3604.0,
+      "target_low": 2209.0,
+      "implied_return_pct": 20.56,
+      "n_analysts": 29,
+      "recommendation": "none"
+    },
+    "SIEMENS.NS": {
+      "current_price": 3710.0,
+      "target_mean_price": 3971.2593,
+      "target_high": 4850.0,
+      "target_low": 3000.0,
+      "implied_return_pct": 7.04,
+      "n_analysts": 27,
+      "recommendation": "hold"
+    },
+    "ABB.NS": {
+      "current_price": 6660.5,
+      "target_mean_price": 7041.6787,
+      "target_high": 8835.0,
+      "target_low": 5400.0,
+      "implied_return_pct": 5.72,
+      "n_analysts": 28,
+      "recommendation": "none"
+    },
+    "HAVELLS.NS": {
+      "current_price": 1043.3,
+      "target_mean_price": 1374.8334,
+      "target_high": 1700.0,
+      "target_low": 1097.0,
+      "implied_return_pct": 31.78,
+      "n_analysts": 36,
+      "recommendation": "buy"
+    },
+    "VOLTAS.NS": {
+      "current_price": 1090.0,
+      "target_mean_price": 1315.2222,
+      "target_high": 1550.0,
+      "target_low": 1025.0,
+      "implied_return_pct": 20.66,
+      "n_analysts": 36,
+      "recommendation": "hold"
+    },
+    "CROMPTON.NS": {
+      "current_price": 211.37,
+      "target_mean_price": 336.30304,
+      "target_high": 410.0,
+      "target_low": 255.0,
+      "implied_return_pct": 59.11,
+      "n_analysts": 33,
+      "recommendation": "none"
+    },
+    "BEL.NS": {
+      "current_price": 387.75,
+      "target_mean_price": 491.78787,
+      "target_high": 550.0,
+      "target_low": 346.0,
+      "implied_return_pct": 26.83,
+      "n_analysts": 33,
+      "recommendation": "strong_buy"
+    },
+    "HAL.NS": {
+      "current_price": 4549.3,
+      "target_mean_price": 5516.607,
+      "target_high": 6800.0,
+      "target_low": 3200.0,
+      "implied_return_pct": 21.26,
+      "n_analysts": 28,
+      "recommendation": "buy"
+    },
+    "INDIGO.NS": {
+      "current_price": 4872.0,
+      "target_mean_price": 5615.75,
+      "target_high": 6580.0,
+      "target_low": 4050.0,
+      "implied_return_pct": 15.27,
+      "n_analysts": 24,
+      "recommendation": "strong_buy"
+    }
+  },
+  "conclusion": "All four tested information-diffusion mechanisms failed to show retail-exploitable edge on free daily NSE data \u2014 either negligible/noisy correlation, or (for the two cross-market tests) a real correlation that is fully absorbed into NSE's opening price before market open. Analyst consensus divergence cannot be backtested (no historical target-price data available for free) and remains observational only. No Team B strategy currently has demonstrated edge; capital stays uncommitted."
+}

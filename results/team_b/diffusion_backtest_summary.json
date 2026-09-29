@@ -1,0 +1,39 @@
+{
+  "lead_lag": {
+    "1": {
+      "correlation": -0.0078,
+      "n_obs": 17793
+    },
+    "2": {
+      "correlation": 0.0264,
+      "n_obs": 17784
+    },
+    "3": {
+      "correlation": 0.0147,
+      "n_obs": 17775
+    },
+    "4": {
+      "correlation": 0.0258,
+      "n_obs": 17766
+    },
+    "5": {
+      "correlation": 0.0312,
+      "n_obs": 17757
+    }
+  },
+  "best_lag": 5,
+  "metrics": {
+    "CAGR%": -0.02,
+    "MaxDD%": -17.3,
+    "Sharpe": 0.04,
+    "Trades": 0,
+    "WinRate%": 0,
+    "FinalValue": 499335.0
+  },
+  "nifty_bh": {
+    "CAGR%": 9.48,
+    "MaxDD%": -38.44,
+    "Sharpe": 0.62
+  },
+  "n_sectors_tested": 9
+}

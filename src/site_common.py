@@ -10,6 +10,7 @@ NAV_ITEMS = [
     ("sentiment.html", "Sentiment"),
     ("montecarlo.html", "Monte Carlo"),
     ("backtest.html", "Backtest"),
+    ("teamb.html", "Team B"),
 ]
 
 CSS = r"""
