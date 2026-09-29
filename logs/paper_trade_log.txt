@@ -55,3 +55,4 @@
 [2026-09-30 01:13:35] As of 2026-09-29: equity = Rs 20000.00, peak = Rs 20000.00, drawdown = 0.00%
 [2026-09-30 01:13:35] Already rebalanced this month (2026-09). Holding: []
 [2026-09-30 01:13:35] Run complete. Equity: Rs 20000.00  Status: ACTIVE
+[2026-09-30 01:13:37] Published to GitHub Pages.

@@ -17,6 +17,7 @@ breach.
 Run it with: python3 paper_trade.py
 """
 import json
+import subprocess
 import sys
 import warnings
 warnings.filterwarnings("ignore")
@@ -31,6 +32,7 @@ from data_fetch import fetch_universe, refresh_latest, INDEX
 from wide_universe import WIDE_UNIVERSE
 import portfolio_momentum as pm
 import costs
+import site_generator
 from bots import technical_bot, quant_bot, sentiment_bot, manager_bot
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -221,6 +223,37 @@ def main():
         state["equity_history"].append(entry)
     save_state(state)
     log(f"Run complete. Equity: Rs {equity_final:.2f}  Status: {state['status']}")
+
+    publish_site()
+
+
+def publish_site():
+    """Regenerate the static site and push it (+ results/logs) to GitHub so
+    GitHub Pages reflects this run. Never lets a git/push failure crash the
+    trading logic above — that's already saved to disk regardless."""
+    try:
+        site_generator.main()
+    except Exception as e:
+        log(f"Site generation failed (non-fatal, ledger already saved): {e}")
+        return
+
+    try:
+        git_dir = str(BASE_DIR)
+        subprocess.run(["git", "-C", git_dir, "add", "docs", "results", "logs/paper_trade_log.txt"],
+                        check=True, capture_output=True, text=True)
+        diff = subprocess.run(["git", "-C", git_dir, "diff", "--cached", "--quiet"])
+        if diff.returncode == 0:
+            log("No changes to publish.")
+            return
+        msg = f"Auto-update: {datetime.now().strftime('%Y-%m-%d %H:%M')} IST run"
+        subprocess.run(["git", "-C", git_dir, "commit", "-m", msg], check=True, capture_output=True, text=True)
+        push = subprocess.run(["git", "-C", git_dir, "push"], capture_output=True, text=True)
+        if push.returncode != 0:
+            log(f"git push failed (non-fatal, will retry next run): {push.stderr.strip()}")
+        else:
+            log("Published to GitHub Pages.")
+    except subprocess.CalledProcessError as e:
+        log(f"git commit failed (non-fatal): {e.stderr}")
 
 
 if __name__ == "__main__":
