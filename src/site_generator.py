@@ -73,43 +73,61 @@ def generate_index(ledger, bots):
         chart_data = {"dates": [chart_data["dates"][0] if chart_data["dates"] else "-", "-"],
                       "values": [chart_data["values"][0] if chart_data["values"] else initial, initial]}
 
+    capital_pct = decision.get('capital_fraction_to_deploy', 0) * 100
+
     body = f"""
 <header class="page-head">
   <div class="eyebrow">Live paper trading &middot; Rs {initial:,} start</div>
   <h1>Portfolio overview</h1>
-  <p class="lede">Regime-adaptive momentum strategy, filtered by the Technical and Sentiment bots, sized by Kelly criterion. See the Manager page for how this cycle's decision was reached.</p>
 </header>
 
 <section>
-  <div class="kpi-row">
-    {kpi("Current equity", fmt_rs(latest_equity), "pos" if pnl_pct >= 0 else "neg", "kpi-equity")}
-    {kpi("Total return", f"{pnl_pct:+.2f}%", "pos" if pnl_pct >= 0 else "neg", "kpi-return")}
-    {kpi("Drawdown from peak", f"{drawdown_pct:.2f}%", "neg" if drawdown_pct < -1 else "", "kpi-drawdown")}
-    {kpi("Status", ledger.get("status", "UNKNOWN"), "neg" if ledger.get("status") == "HALTED" else "pos")}
-    {kpi("Strategy mode", mode)}
-  </div>
-  <p id="live-indicator" style="font-size:11px;color:var(--ink-muted);margin:8px 0 0;">Showing last scheduled update (checking for live prices&hellip;)</p>
-</section>
-
-<section>
-  <h2>Equity curve</h2>
-  <div class="chart-card">
-    <div class="legend"><div class="legend-item"><span class="legend-swatch" style="background:var(--series-1)"></span>Portfolio value</div></div>
-    <div class="chart-wrap"><svg id="chart-equity" style="width:100%;height:auto;"></svg><div class="tooltip" id="tt-equity"></div></div>
+  <div class="dash-grid">
+    <div class="widget widget-hero">
+      <div class="widget-label">Current equity</div>
+      <div class="hero-value {'pos' if pnl_pct >= 0 else 'neg'}" id="kpi-equity">{fmt_rs(latest_equity)}</div>
+      <div class="hero-sub" id="live-indicator">Checking live prices&hellip;</div>
+      <div class="sparkline"><svg id="equity-sparkline" style="width:100%;height:36px;display:block;"></svg></div>
+    </div>
+    <div class="col-2">{kpi("Total return", f"{pnl_pct:+.2f}%", "pos" if pnl_pct >= 0 else "neg", "kpi-return")}</div>
+    <div class="col-2">{kpi("Drawdown", f"{drawdown_pct:.2f}%", "neg" if drawdown_pct < -1 else "", "kpi-drawdown")}</div>
+    <div class="col-2">{kpi("Status", ledger.get("status", "UNKNOWN"), "neg" if ledger.get("status") == "HALTED" else "pos")}</div>
+    <div class="col-2">{kpi("Deployed", f"{capital_pct:.0f}%")}</div>
   </div>
 </section>
 
 <section>
-  <div class="grid-2">
-    <div class="card">
-      <h3>Current positions</h3>
+  <div class="dash-grid">
+    <div class="col-8">
+      <div class="chart-card" style="height:100%;">
+        <div class="legend"><div class="legend-item"><span class="legend-swatch" style="background:var(--series-1)"></span>Portfolio value</div></div>
+        <div class="chart-wrap"><svg id="chart-equity" style="width:100%;height:auto;"></svg><div class="tooltip" id="tt-equity"></div></div>
+      </div>
+    </div>
+    <div class="col-4 widget">
+      <div class="widget-label">Regime</div>
+      <div style="margin-bottom:10px;">{chip(mode, mode_chip)}</div>
+      <table style="font-size:12px;">
+        <tr><td style="padding:4px 0;color:var(--ink-muted);">NIFTY vs 200d</td><td class="num" style="text-align:right;padding:4px 0;">{regime.get('pct_vs_sma200', 0):+.1f}%</td></tr>
+        <tr><td style="padding:4px 0;color:var(--ink-muted);">ADX</td><td class="num" style="text-align:right;padding:4px 0;">{regime.get('adx', '-')}</td></tr>
+        <tr><td style="padding:4px 0;color:var(--ink-muted);">Capital deployed</td><td class="num" style="text-align:right;padding:4px 0;">{capital_pct:.1f}%</td></tr>
+      </table>
+      <a href="manager.html" style="font-size:12px;margin-top:auto;padding-top:8px;display:block;">Full reasoning &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="dash-grid">
+    <div class="col-6 widget">
+      <div class="widget-label">Current positions</div>
       <div class="table-scroll"><table>
-        <thead><tr><th>Stock</th><th>Shares</th><th>Entry price</th><th>Entry date</th><th>Live price</th><th>P&amp;L</th></tr></thead>
+        <thead><tr><th>Stock</th><th>Shares</th><th>Entry</th><th>Date</th><th>Live</th><th>P&amp;L</th></tr></thead>
         <tbody id="holdings-tbody">{holdings_rows}</tbody>
       </table></div>
     </div>
-    <div class="card">
-      <h3>This cycle's eligible trades</h3>
+    <div class="col-6 widget">
+      <div class="widget-label">This cycle's eligible trades</div>
       <div class="table-scroll"><table>
         <thead><tr><th>Stock</th><th>Technical</th><th>Sentiment</th><th>Rel. vs NIFTY</th></tr></thead>
         <tbody>{picks_rows}</tbody>
@@ -118,19 +136,13 @@ def generate_index(ledger, bots):
   </div>
 </section>
 
-<section>
-  <div class="callout info">
-    <b>Regime:</b> {chip(mode, mode_chip)} &mdash; NIFTY is {regime.get('pct_vs_sma200', 0):+.1f}% vs its 200-day average (ADX {regime.get('adx', '-')}).
-    Deploying {decision.get('capital_fraction_to_deploy', 0)*100:.1f}% of capital this cycle.
-    <a href="manager.html">Full reasoning &rarr;</a>
-  </div>
-</section>
-
 {CHART_JS}
 <script>
 const chartData = {json.dumps(chart_data)};
+const brandColor = getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim();
 drawMultiLine(document.getElementById('chart-equity'), document.getElementById('tt-equity'),
-  chartData.dates, [{{label:'Equity', values: chartData.values, color: getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim()}}], {{h:280}});
+  chartData.dates, [{{label:'Equity', values: chartData.values, color: brandColor}}], {{h:230}});
+drawSparkline(document.getElementById('equity-sparkline'), chartData.values, brandColor);
 </script>
 
 <script>
