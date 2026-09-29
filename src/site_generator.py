@@ -459,31 +459,31 @@ def generate_montecarlo(ledger, bots):
 
 <section>
   <div class="card">
-    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
-      <div>
-        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Stock (defaulting to {default_note})</label>
-        <select id="mc-ticker" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;min-width:220px;">
+    <div class="controls-row">
+      <div class="field">
+        <label>Stock (defaulting to {default_note})</label>
+        <select id="mc-ticker" class="field-select" style="min-width:220px;">
           {options_html}
         </select>
       </div>
-      <div>
-        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Horizon (trading days)</label>
-        <select id="mc-horizon" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;">
+      <div class="field">
+        <label>Horizon (trading days)</label>
+        <select id="mc-horizon" class="field-select">
           <option value="10">10 (~2 weeks)</option>
           <option value="21" selected>21 (~1 month)</option>
           <option value="63">63 (~3 months)</option>
           <option value="126">126 (~6 months)</option>
         </select>
       </div>
-      <div>
-        <label style="display:block;font-size:11px;color:var(--ink-muted);margin-bottom:4px;">Simulations</label>
-        <select id="mc-nsims" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--ink-1);font-family:inherit;">
+      <div class="field">
+        <label>Simulations</label>
+        <select id="mc-nsims" class="field-select">
           <option value="200">200</option>
           <option value="500" selected>500</option>
           <option value="2000">2000</option>
         </select>
       </div>
-      <button id="mc-reroll" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--series-1);color:white;font-weight:600;font-size:13px;cursor:pointer;">Re-roll</button>
+      <button id="mc-reroll" class="btn-primary">Re-roll</button>
     </div>
 
     <div class="legend">
