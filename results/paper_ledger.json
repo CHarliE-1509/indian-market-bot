@@ -5,12 +5,17 @@
   "peak_equity": 20000,
   "status": "ACTIVE",
   "halt_reason": null,
-  "last_rebalance_month": "2026-09",
+  "last_rebalance_month": "2026-10",
   "trade_log": [
     {
       "date": "2026-09-29",
       "side": "NONE",
       "reason": "regime filter negative"
+    },
+    {
+      "date": "2026-10-01",
+      "side": "NONE",
+      "reason": "mode=BEAR, no qualifying picks or 0% Kelly allocation"
     }
   ],
   "equity_history": [
@@ -20,6 +25,10 @@
     },
     {
       "date": "2026-09-30",
+      "equity": 20000
+    },
+    {
+      "date": "2026-10-01",
       "equity": 20000
     }
   ]

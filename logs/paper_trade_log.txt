@@ -67,3 +67,16 @@
 [2026-09-30 10:09:48] As of 2026-09-30: equity = Rs 20000.00, peak = Rs 20000.00, drawdown = 0.00%
 [2026-09-30 10:09:48] Already rebalanced this month (2026-09). Holding: []
 [2026-09-30 10:09:48] Run complete. Equity: Rs 20000.00  Status: ACTIVE
+[2026-09-30 16:12:02] git push failed (non-fatal, will retry next run): fatal: unable to access 'https://github.com/CHarliE-1509/indian-market-bot.git/': Recv failure: Operation timed out
+[2026-10-01 10:03:04] ============================================================
+[2026-10-01 10:03:04] Paper trade run starting
+[2026-10-01 10:03:04] Refreshing latest price data...
+[2026-10-01 10:27:51] Running technical bot...
+[2026-10-01 10:27:52] Running quant bot...
+[2026-10-01 10:27:52] Running manager bot's regime + candidate selection...
+[2026-10-01 10:27:52] Running sentiment bot on 0 momentum-qualified candidates (not full universe, to keep runtime sane)...
+[2026-10-01 10:27:52] Manager decision: mode=BEAR, deploy=0.0%, picks=[]
+[2026-10-01 10:27:52] As of 2026-10-01: equity = Rs 20000.00, peak = Rs 20000.00, drawdown = 0.00%
+[2026-10-01 10:27:52] New month (2026-10) since last rebalance (2026-09) — rebalancing
+[2026-10-01 10:27:52] No qualifying picks / 0% capital fraction as of 2026-10-01 (BEAR) — staying in cash
+[2026-10-01 10:27:52] Run complete. Equity: Rs 20000.00  Status: ACTIVE
