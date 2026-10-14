@@ -264,3 +264,17 @@ error: failed to push some refs to 'https://github.com/CHarliE-1509/indian-marke
 [2026-10-13 10:25:56] As of 2026-10-13: equity = Rs 20000.00, peak = Rs 20000.00, drawdown = 0.00%
 [2026-10-13 10:25:56] Already rebalanced this month (2026-10). Holding: []
 [2026-10-13 10:25:56] Run complete. Equity: Rs 20000.00  Status: ACTIVE
+[2026-10-14 05:51:45] git push failed (non-fatal, will retry next run): To https://github.com/CHarliE-1509/indian-market-bot.git
+ ! [remote rejected] main -> main (cannot lock ref 'refs/heads/main': is at f658ba4359535d40eda282034235774b556a7102 but expected 1cd5392ac01a09dc12822edb014a0ff6217a7cee)
+error: failed to push some refs to 'https://github.com/CHarliE-1509/indian-market-bot.git'
+[2026-10-14 09:27:30] ============================================================
+[2026-10-14 09:27:30] Paper trade run starting
+[2026-10-14 09:27:30] Refreshing latest price data...
+[2026-10-14 11:54:14] Running technical bot...
+[2026-10-14 11:59:20] Running quant bot...
+[2026-10-14 11:59:21] Running manager bot's regime + candidate selection...
+[2026-10-14 11:59:21] Running sentiment bot on 0 momentum-qualified candidates (not full universe, to keep runtime sane)...
+[2026-10-14 11:59:21] Manager decision: mode=BEAR, deploy=0.0%, picks=[]
+[2026-10-14 11:59:21] As of 2026-10-13: equity = Rs 20000.00, peak = Rs 20000.00, drawdown = 0.00%
+[2026-10-14 11:59:21] Already rebalanced this month (2026-10). Holding: []
+[2026-10-14 11:59:21] Run complete. Equity: Rs 20000.00  Status: ACTIVE
