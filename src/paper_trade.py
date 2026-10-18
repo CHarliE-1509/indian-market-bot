@@ -17,6 +17,7 @@ breach.
 Run it with: python3 paper_trade.py
 """
 import json
+import os
 import subprocess
 import sys
 import warnings
@@ -39,9 +40,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 LEDGER_PATH = BASE_DIR / "results" / "paper_ledger.json"
 LOG_PATH = BASE_DIR / "logs" / "paper_trade_log.txt"
 BOTS_OUTPUT_PATH = BASE_DIR / "results" / "bots_output.json"
+LOCK_PATH = BASE_DIR / "results" / "paper_trade.lock"
 
 INITIAL_CAPITAL = 20000
 DRAWDOWN_KILL_PCT = 0.20
+
+
+def acquire_lock():
+    """Refuses to start a second run while one is still in progress. This became
+    necessary after Yahoo rate-limiting caused individual runs to hang for hours
+    (missing request timeout — now fixed in data_fetch.py), which let the 30-min
+    launchd schedule pile up overlapping runs that stepped on each other's git
+    pushes ('cannot lock ref') and ledger writes. Returns True if the lock was
+    acquired, False if another run genuinely still holds it."""
+    if LOCK_PATH.exists():
+        try:
+            pid = int(LOCK_PATH.read_text().strip())
+            os.kill(pid, 0)  # raises if that process no longer exists
+            return False  # another run genuinely still holds the lock
+        except PermissionError:
+            return False  # pid exists and belongs to someone else — treat as still running
+        except (ValueError, ProcessLookupError):
+            pass  # stale lock (unreadable contents, or that process is gone) — safe to take over
+    LOCK_PATH.write_text(str(os.getpid()))
+    return True
+
+
+def release_lock():
+    try:
+        LOCK_PATH.unlink(missing_ok=True)
+    except Exception:
+        pass
 
 
 def load_state():
@@ -175,6 +204,16 @@ def rebalance(state, data, decision):
 
 
 def main():
+    if not acquire_lock():
+        log(f"Another run is still in progress (lock held by pid in {LOCK_PATH.name}) — skipping this cycle.")
+        return
+    try:
+        _run()
+    finally:
+        release_lock()
+
+
+def _run():
     log("=" * 60)
     log("Paper trade run starting")
     state = load_state()
