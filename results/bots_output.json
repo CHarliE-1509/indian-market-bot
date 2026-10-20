@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-20T10:04:00.509951",
+  "generated_at": "2026-10-20T12:21:38.064517",
   "technical": {
     "RELIANCE.NS": {
       "score": -0.052,
@@ -594,20 +594,20 @@
       "sma200": 144.97
     },
     "COALINDIA.NS": {
-      "score": -0.19,
+      "score": -0.464,
       "regime": "choppy",
       "adx": 14.9,
-      "rsi14": 47.0,
+      "rsi14": 46.3,
       "components": {
-        "trend_alignment": -0.333,
-        "macd_momentum": -0.076,
-        "rsi_signal": -0.018,
-        "bollinger_position": -0.207
+        "trend_alignment": -1.0,
+        "macd_momentum": -0.082,
+        "rsi_signal": -0.022,
+        "bollinger_position": -0.241
       },
-      "price": 412.55,
-      "sma20": 417.29,
-      "sma50": 412.38,
-      "sma200": 425.31
+      "price": 411.7,
+      "sma20": 417.25,
+      "sma50": 412.37,
+      "sma200": 425.3
     },
     "GAIL.NS": {
       "score": -0.211,
@@ -1026,20 +1026,20 @@
       "sma200": 2254.76
     },
     "JSWSTEEL.NS": {
-      "score": -0.112,
+      "score": 0.171,
       "regime": "transitional",
       "adx": 18.7,
-      "rsi14": 50.0,
+      "rsi14": 51.8,
       "components": {
-        "trend_alignment": -0.333,
-        "macd_momentum": 0.061,
-        "rsi_signal": 0.0,
-        "bollinger_position": 0.022
+        "trend_alignment": 0.333,
+        "macd_momentum": 0.081,
+        "rsi_signal": 0.011,
+        "bollinger_position": 0.077
       },
-      "price": 1233.5,
-      "sma20": 1230.5,
-      "sma50": 1267.44,
-      "sma200": 1240.13
+      "price": 1241.3,
+      "sma20": 1230.89,
+      "sma50": 1267.59,
+      "sma200": 1240.17
     },
     "TATASTEEL.NS": {
       "score": -0.469,
@@ -1882,17 +1882,17 @@
       "momentum_12_1": -0.0768
     },
     "COALINDIA.NS": {
-      "price": 412.55,
-      "pct_deviation_from_50d_mean": 0.04,
-      "zscore_50d": 0.02,
+      "price": 411.7,
+      "pct_deviation_from_50d_mean": -0.16,
+      "zscore_50d": -0.06,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": 7.45,
+      "relative_mispricing_vs_nifty_pct": 7.24,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 0.18,
-      "annualized_volatility_pct": 19.8,
-      "probability_up_21d": 0.58,
+      "annualized_volatility_pct": 19.9,
+      "probability_up_21d": 0.579,
       "momentum_12_1": 0.1735
     },
     "GAIL.NS": {
@@ -2260,17 +2260,17 @@
       "momentum_12_1": 0.0028
     },
     "JSWSTEEL.NS": {
-      "price": 1233.5,
-      "pct_deviation_from_50d_mean": -2.68,
-      "zscore_50d": -0.75,
+      "price": 1241.3,
+      "pct_deviation_from_50d_mean": -2.07,
+      "zscore_50d": -0.58,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": 2.96,
+      "relative_mispricing_vs_nifty_pct": 3.56,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
-      "beta_vs_nifty": 1.16,
-      "annualized_volatility_pct": 22.8,
-      "probability_up_21d": 0.544,
+      "beta_vs_nifty": 1.15,
+      "annualized_volatility_pct": 23.0,
+      "probability_up_21d": 0.547,
       "momentum_12_1": 0.1028
     },
     "TATASTEEL.NS": {
