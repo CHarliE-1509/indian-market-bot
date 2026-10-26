@@ -1,21 +1,21 @@
 {
-  "generated_at": "2026-10-26T12:54:46.932227",
+  "generated_at": "2026-10-26T15:55:13.740820",
   "technical": {
     "RELIANCE.NS": {
-      "score": -0.068,
+      "score": -0.038,
       "regime": "transitional",
-      "adx": 24.9,
-      "rsi14": 45.8,
+      "adx": 24.8,
+      "rsi14": 48.3,
       "components": {
         "trend_alignment": -0.333,
-        "macd_momentum": 0.19,
-        "rsi_signal": -0.025,
-        "bollinger_position": 0.081
+        "macd_momentum": 0.213,
+        "rsi_signal": -0.01,
+        "bollinger_position": 0.218
       },
-      "price": 1193.2,
-      "sma20": 1188.37,
-      "sma50": 1243.25,
-      "sma200": 1327.95
+      "price": 1202.0,
+      "sma20": 1188.81,
+      "sma50": 1243.42,
+      "sma200": 1328.0
     },
     "TCS.NS": {
       "score": 0.674,
@@ -34,148 +34,148 @@
       "sma200": 2395.49
     },
     "HDFCBANK.NS": {
-      "score": -0.538,
+      "score": -0.543,
       "regime": "transitional",
-      "adx": 19.0,
-      "rsi14": 39.0,
+      "adx": 19.1,
+      "rsi14": 38.6,
       "components": {
         "trend_alignment": -1.0,
-        "macd_momentum": -0.155,
-        "rsi_signal": -0.066,
-        "bollinger_position": -0.544
+        "macd_momentum": -0.159,
+        "rsi_signal": -0.068,
+        "bollinger_position": -0.564
       },
-      "price": 688.25,
-      "sma20": 709.54,
-      "sma50": 714.86,
+      "price": 687.25,
+      "sma20": 709.49,
+      "sma50": 714.84,
       "sma200": 782.5
     },
     "ICICIBANK.NS": {
-      "score": 0.528,
+      "score": 0.556,
       "regime": "trending",
       "adx": 28.4,
-      "rsi14": 55.2,
+      "rsi14": 59.1,
       "components": {
         "trend_alignment": 1.0,
-        "macd_momentum": 0.264,
-        "rsi_signal": 0.031,
-        "bollinger_position": 0.293
+        "macd_momentum": 0.295,
+        "rsi_signal": 0.054,
+        "bollinger_position": 0.395
       },
-      "price": 1385.1,
-      "sma20": 1352.12,
-      "sma50": 1376.99,
-      "sma200": 1345.1
+      "price": 1398.4,
+      "sma20": 1352.78,
+      "sma50": 1377.26,
+      "sma200": 1345.17
     },
     "INFY.NS": {
-      "score": 0.403,
+      "score": 0.418,
       "regime": "trending",
       "adx": 25.9,
-      "rsi14": 61.7,
+      "rsi14": 63.9,
       "components": {
         "trend_alignment": 0.333,
-        "macd_momentum": 0.686,
-        "rsi_signal": 0.07,
-        "bollinger_position": 0.354
+        "macd_momentum": 0.712,
+        "rsi_signal": 0.083,
+        "bollinger_position": 0.39
       },
-      "price": 1142.5,
-      "sma20": 1065.95,
-      "sma50": 1079.0,
-      "sma200": 1196.71
+      "price": 1151.4,
+      "sma20": 1066.4,
+      "sma50": 1079.18,
+      "sma200": 1196.75
     },
     "HINDUNILVR.NS": {
-      "score": -0.513,
+      "score": -0.505,
       "regime": "trending",
       "adx": 27.0,
-      "rsi14": 34.7,
+      "rsi14": 35.3,
       "components": {
         "trend_alignment": -1.0,
-        "macd_momentum": -0.046,
-        "rsi_signal": -0.092,
-        "bollinger_position": -0.569
+        "macd_momentum": -0.039,
+        "rsi_signal": -0.088,
+        "bollinger_position": -0.535
       },
-      "price": 1800.3,
-      "sma20": 1857.02,
-      "sma50": 1928.48,
-      "sma200": 2133.32
+      "price": 1804.7,
+      "sma20": 1857.24,
+      "sma50": 1928.57,
+      "sma200": 2133.35
     },
     "ITC.NS": {
-      "score": -0.467,
+      "score": -0.443,
       "regime": "transitional",
       "adx": 21.5,
-      "rsi14": 43.9,
+      "rsi14": 45.9,
       "components": {
         "trend_alignment": -1.0,
-        "macd_momentum": -0.042,
-        "rsi_signal": -0.037,
-        "bollinger_position": -0.326
+        "macd_momentum": -0.023,
+        "rsi_signal": -0.025,
+        "bollinger_position": -0.214
       },
-      "price": 257.75,
-      "sma20": 261.9,
-      "sma50": 264.35,
+      "price": 259.3,
+      "sma20": 261.98,
+      "sma50": 264.38,
       "sma200": 287.91
     },
     "SBIN.NS": {
-      "score": -0.399,
+      "score": -0.079,
       "regime": "trending",
       "adx": 27.7,
-      "rsi14": 42.0,
+      "rsi14": 45.0,
       "components": {
-        "trend_alignment": -1.0,
-        "macd_momentum": 0.144,
-        "rsi_signal": -0.048,
-        "bollinger_position": -0.23
+        "trend_alignment": -0.333,
+        "macd_momentum": 0.17,
+        "rsi_signal": -0.03,
+        "bollinger_position": 0.054
       },
-      "price": 951.7,
-      "sma20": 957.84,
-      "sma50": 993.99,
-      "sma200": 1032.04
+      "price": 959.65,
+      "sma20": 958.23,
+      "sma50": 994.15,
+      "sma200": 1032.08
     },
     "BHARTIARTL.NS": {
-      "score": 0.58,
+      "score": 0.594,
       "regime": "transitional",
       "adx": 22.5,
-      "rsi14": 59.9,
+      "rsi14": 61.4,
       "components": {
         "trend_alignment": 1.0,
-        "macd_momentum": 0.367,
-        "rsi_signal": 0.059,
-        "bollinger_position": 0.404
+        "macd_momentum": 0.386,
+        "rsi_signal": 0.068,
+        "bollinger_position": 0.453
       },
-      "price": 1895.4,
-      "sma20": 1820.2,
-      "sma50": 1847.87,
-      "sma200": 1869.5
+      "price": 1906.2,
+      "sma20": 1820.74,
+      "sma50": 1848.08,
+      "sma200": 1869.56
     },
     "KOTAKBANK.NS": {
-      "score": 0.407,
+      "score": 0.416,
       "regime": "trending",
       "adx": 33.7,
-      "rsi14": 58.0,
+      "rsi14": 59.0,
       "components": {
         "trend_alignment": 1.0,
-        "macd_momentum": -0.085,
-        "rsi_signal": 0.048,
-        "bollinger_position": 0.168
+        "macd_momentum": -0.073,
+        "rsi_signal": 0.054,
+        "bollinger_position": 0.199
       },
-      "price": 438.95,
-      "sma20": 430.82,
-      "sma50": 419.38,
-      "sma200": 399.16
+      "price": 440.55,
+      "sma20": 430.9,
+      "sma50": 419.41,
+      "sma200": 399.17
     },
     "LT.NS": {
-      "score": -0.413,
+      "score": -0.39,
       "regime": "trending",
       "adx": 30.5,
-      "rsi14": 40.4,
+      "rsi14": 42.9,
       "components": {
         "trend_alignment": -1.0,
-        "macd_momentum": 0.086,
-        "rsi_signal": -0.057,
-        "bollinger_position": -0.199
+        "macd_momentum": 0.103,
+        "rsi_signal": -0.043,
+        "bollinger_position": -0.096
       },
-      "price": 3647.9,
-      "sma20": 3682.34,
-      "sma50": 3855.55,
-      "sma200": 3918.21
+      "price": 3666.9,
+      "sma20": 3683.29,
+      "sma50": 3855.93,
+      "sma200": 3918.31
     },
     "AXISBANK.NS": {
       "score": -0.491,
@@ -1364,17 +1364,17 @@
   },
   "quant": {
     "RELIANCE.NS": {
-      "price": 1193.2,
-      "pct_deviation_from_50d_mean": -4.03,
-      "zscore_50d": -0.94,
+      "price": 1202.0,
+      "pct_deviation_from_50d_mean": -3.33,
+      "zscore_50d": -0.78,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": -2.04,
+      "relative_mispricing_vs_nifty_pct": -1.37,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 0.95,
-      "annualized_volatility_pct": 20.6,
-      "probability_up_21d": 0.408,
+      "annualized_volatility_pct": 20.7,
+      "probability_up_21d": 0.412,
       "momentum_12_1": -0.1562
     },
     "TCS.NS": {
@@ -1392,129 +1392,129 @@
       "momentum_12_1": -0.293
     },
     "HDFCBANK.NS": {
-      "price": 688.25,
-      "pct_deviation_from_50d_mean": -3.72,
-      "zscore_50d": -2.0,
+      "price": 687.25,
+      "pct_deviation_from_50d_mean": -3.86,
+      "zscore_50d": -2.07,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": 1.7,
+      "relative_mispricing_vs_nifty_pct": 1.56,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 1.23,
       "annualized_volatility_pct": 19.2,
-      "probability_up_21d": 0.334,
+      "probability_up_21d": 0.333,
       "momentum_12_1": -0.2551
     },
     "ICICIBANK.NS": {
-      "price": 1385.1,
-      "pct_deviation_from_50d_mean": 0.59,
-      "zscore_50d": 0.19,
+      "price": 1398.4,
+      "pct_deviation_from_50d_mean": 1.54,
+      "zscore_50d": 0.51,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": 5.15,
+      "relative_mispricing_vs_nifty_pct": 6.09,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 0.93,
       "annualized_volatility_pct": 18.0,
-      "probability_up_21d": 0.519,
+      "probability_up_21d": 0.525,
       "momentum_12_1": -0.0232
     },
     "INFY.NS": {
-      "price": 1142.5,
-      "pct_deviation_from_50d_mean": 5.88,
-      "zscore_50d": 1.14,
+      "price": 1151.4,
+      "pct_deviation_from_50d_mean": 6.69,
+      "zscore_50d": 1.29,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": 7.52,
-      "relative_mispriced_flag": false,
+      "relative_mispricing_vs_nifty_pct": 8.3,
+      "relative_mispriced_flag": true,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 0.73,
       "annualized_volatility_pct": 31.7,
-      "probability_up_21d": 0.424,
+      "probability_up_21d": 0.427,
       "momentum_12_1": -0.3101
     },
     "HINDUNILVR.NS": {
-      "price": 1800.3,
-      "pct_deviation_from_50d_mean": -6.65,
-      "zscore_50d": -1.87,
+      "price": 1804.7,
+      "pct_deviation_from_50d_mean": -6.42,
+      "zscore_50d": -1.81,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": -5.11,
+      "relative_mispricing_vs_nifty_pct": -4.89,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 0.79,
       "annualized_volatility_pct": 20.7,
-      "probability_up_21d": 0.35,
+      "probability_up_21d": 0.351,
       "momentum_12_1": -0.2177
     },
     "ITC.NS": {
-      "price": 257.75,
-      "pct_deviation_from_50d_mean": -2.5,
-      "zscore_50d": -1.34,
+      "price": 259.3,
+      "pct_deviation_from_50d_mean": -1.92,
+      "zscore_50d": -1.04,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": -0.06,
+      "relative_mispricing_vs_nifty_pct": 0.49,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 0.75,
-      "annualized_volatility_pct": 24.2,
-      "probability_up_21d": 0.294,
+      "annualized_volatility_pct": 24.3,
+      "probability_up_21d": 0.297,
       "momentum_12_1": -0.3188
     },
     "SBIN.NS": {
-      "price": 951.7,
-      "pct_deviation_from_50d_mean": -4.25,
-      "zscore_50d": -1.14,
+      "price": 959.65,
+      "pct_deviation_from_50d_mean": -3.47,
+      "zscore_50d": -0.93,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": -3.03,
+      "relative_mispricing_vs_nifty_pct": -2.28,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 1.06,
       "annualized_volatility_pct": 18.5,
-      "probability_up_21d": 0.547,
+      "probability_up_21d": 0.551,
       "momentum_12_1": 0.1013
     },
     "BHARTIARTL.NS": {
-      "price": 1895.4,
-      "pct_deviation_from_50d_mean": 2.57,
-      "zscore_50d": 0.84,
+      "price": 1906.2,
+      "pct_deviation_from_50d_mean": 3.14,
+      "zscore_50d": 1.02,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": 3.54,
+      "relative_mispricing_vs_nifty_pct": 4.08,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
-      "beta_vs_nifty": 0.68,
-      "annualized_volatility_pct": 23.8,
-      "probability_up_21d": 0.482,
+      "beta_vs_nifty": 0.69,
+      "annualized_volatility_pct": 23.9,
+      "probability_up_21d": 0.485,
       "momentum_12_1": -0.1039
     },
     "KOTAKBANK.NS": {
-      "price": 438.95,
-      "pct_deviation_from_50d_mean": 4.67,
-      "zscore_50d": 1.25,
+      "price": 440.55,
+      "pct_deviation_from_50d_mean": 5.04,
+      "zscore_50d": 1.35,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": 19.51,
+      "relative_mispricing_vs_nifty_pct": 19.92,
       "relative_mispriced_flag": true,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 0.95,
-      "annualized_volatility_pct": 19.2,
-      "probability_up_21d": 0.505,
+      "annualized_volatility_pct": 19.3,
+      "probability_up_21d": 0.507,
       "momentum_12_1": -0.07
     },
     "LT.NS": {
-      "price": 3647.9,
-      "pct_deviation_from_50d_mean": -5.39,
-      "zscore_50d": -1.29,
+      "price": 3666.9,
+      "pct_deviation_from_50d_mean": -4.9,
+      "zscore_50d": -1.18,
       "mispriced_flag": false,
       "mispricing_direction": null,
-      "relative_mispricing_vs_nifty_pct": -3.45,
+      "relative_mispricing_vs_nifty_pct": -2.98,
       "relative_mispriced_flag": false,
       "relative_mispricing_note": "stock-specific move vs NIFTY over same window \u2014 this is the more meaningful flag during a broad market selloff",
       "beta_vs_nifty": 1.4,
       "annualized_volatility_pct": 18.2,
-      "probability_up_21d": 0.488,
+      "probability_up_21d": 0.49,
       "momentum_12_1": -0.0023
     },
     "AXISBANK.NS": {
@@ -2586,7 +2586,7 @@
     "top_sectors": [
       {
         "sector": "Telecom",
-        "avg_score": 0.372
+        "avg_score": 0.386
       },
       {
         "sector": "Auto Ancillary",
@@ -2594,7 +2594,7 @@
       },
       {
         "sector": "IT",
-        "avg_score": 0.228
+        "avg_score": 0.231
       },
       {
         "sector": "Retail/Consumer",
