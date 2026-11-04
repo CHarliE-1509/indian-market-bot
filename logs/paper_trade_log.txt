@@ -1059,3 +1059,18 @@ error: failed to push some refs to 'https://github.com/CHarliE-1509/indian-marke
 [2026-11-02 18:12:01] New month (2026-11) since last rebalance (2026-10) — rebalancing
 [2026-11-02 18:12:01] No qualifying picks / 0% capital fraction as of 2026-11-02 (BEAR) — staying in cash
 [2026-11-02 18:12:01] Run complete. Equity: Rs 20000.00  Status: ACTIVE
+[2026-11-03 16:10:20] git push failed (non-fatal, will retry next run): error: RPC failed; curl 6 Recv failure: Operation timed out
+send-pack: unexpected disconnect while reading sideband packet
+fatal: the remote end hung up unexpectedly
+Everything up-to-date
+[2026-11-04 10:01:44] ============================================================
+[2026-11-04 10:01:44] Paper trade run starting
+[2026-11-04 10:01:44] Refreshing latest price data...
+[2026-11-04 10:03:05] Running technical bot...
+[2026-11-04 10:03:06] Running quant bot...
+[2026-11-04 10:03:06] Running manager bot's regime + candidate selection...
+[2026-11-04 10:03:06] Running sentiment bot on 0 momentum-qualified candidates (not full universe, to keep runtime sane)...
+[2026-11-04 10:03:06] Manager decision: mode=BEAR, deploy=0.0%, picks=[]
+[2026-11-04 10:03:06] As of 2026-11-02: equity = Rs 20000.00, peak = Rs 20000.00, drawdown = 0.00%
+[2026-11-04 10:03:06] Already rebalanced this month (2026-11). Holding: []
+[2026-11-04 10:03:06] Run complete. Equity: Rs 20000.00  Status: ACTIVE
